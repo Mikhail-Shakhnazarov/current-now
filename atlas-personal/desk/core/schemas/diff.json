@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Diff",
+  "description": "Execution output: file changes with verification",
+  "type": "object",
+  "required": ["spec_id", "status"],
+  "properties": {
+    "spec_id": {
+      "type": "string",
+      "description": "Reference to spec being executed"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["complete", "partial", "blocked"],
+      "description": "Execution outcome"
+    },
+    "changes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["file", "action", "description"],
+        "properties": {
+          "file": {
+            "type": "string",
+            "description": "Path to modified file"
+          },
+          "action": {
+            "type": "string",
+            "enum": ["create", "modify", "delete"],
+            "description": "Type of change"
+          },
+          "description": {
+            "type": "string",
+            "description": "What changed and why"
+          },
+          "spec_clause": {
+            "type": "string",
+            "description": "Which requirement this satisfies"
+          }
+        }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "required": ["ran", "passed"],
+      "properties": {
+        "ran": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Commands executed for verification"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "friction": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["spec_clause", "issue"],
+        "properties": {
+          "spec_clause": {"type": "string"},
+          "issue": {"type": "string"},
+          "options": {
+            "type": "array",
+            "items": {"type": "string"}
+          }
+        }
+      },
+      "description": "Blocking items if status is blocked or partial"
+    },
+    "changelog_entry": {
+      "type": "string",
+      "description": "Entry to append to changelog"
+    }
+  }
+}

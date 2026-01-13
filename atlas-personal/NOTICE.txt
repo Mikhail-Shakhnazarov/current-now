@@ -1,0 +1,26 @@
+NOTICE
+
+Authorship
+- Mikhail Shakhnazarov
+
+Year convention
+- All dates in this repository are normalized to 2026.
+
+Licensing (path-based)
+
+MIT License applies to:
+- atlas-personal/desk/**
+- atlas-personal/work/projects/**/repo/**
+- all *.py files
+- all *.json files
+
+CC BY 4.0 applies to everything else, including:
+- atlas-personal/docs/**
+- atlas-personal/work/logs/**
+- atlas-personal/work/sessions/**
+- atlas-personal/work/friction/**
+- atlas-personal/work/projects/** (excluding **/repo/** and excluding **/.atlas/**)
+
+See also:
+- atlas-personal/LICENSE
+- atlas-personal/LICENSE-CC-BY-4.0.txt

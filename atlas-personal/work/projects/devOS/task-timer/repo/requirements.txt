@@ -1,0 +1,4 @@
+# requirements.txt for Project Timing Tool
+
+# Python built-in modules: sqlite3, argparse, json, os, datetime
+# No external dependencies needed for v1
