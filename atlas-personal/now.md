@@ -23,6 +23,7 @@ Year: 2026
 
 - Review `work/friction/log.md`
 - Pick one active project and open its `now.md`
+- Continue: `work/projects/writeOS/marco-polo/now.md`
 - If starting new work: interpret operator input into a spec
 
 ## Design Principle (Stub)

@@ -20,7 +20,11 @@ Taxonomy:
 
 ## writeOS
 
-- (none yet)
+- `writeOS/marco-polo/` -- active (pilot)
+  - Now: `writeOS/marco-polo/now.md`
+  - Drafts: `writeOS/marco-polo/drafts/`
+  - Specs: `writeOS/marco-polo/specs/`
+  - Outputs: `writeOS/marco-polo/outputs/`
 
 ## self
 
