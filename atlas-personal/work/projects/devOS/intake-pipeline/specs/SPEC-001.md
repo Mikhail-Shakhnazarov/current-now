@@ -39,6 +39,10 @@ Design note: the intake pipeline is primarily a context-forming process. The cap
 
 Project mention annotation (v1): `@<project>` in MARCO is treated as a weak mention marker (not a routing command). Hash tags are out of scope for v1.
 
+Priority annotation (v1): `PRIO: high|med|low` is a hint for compilation and later promotion.
+
+Direction block (optional): content between `BEGIN DIRECTION` and `END DIRECTION` is treated as proposals and questions during compilation.
+
 Stage 2: termination
 
 Operator reads typed POLO and approves it. Approval gates propagation.
@@ -98,6 +102,8 @@ Canonical intake location (v1):
 The pipeline is a precompilation mechanism for interpreter context. Typed POLO and deterministic propagation reduce ambiguity and reduce token waste by turning raw operator notes into expectation-compatible artifacts.
 
 Two additional system leverage ideas connect directly to this project: a RAG-ready context pack per repo/project (portable summaries and key artifacts), and explicit two-step sequential processing with a clear handoff point (plan/interpret -> agentic/execute) optimized for safe parallelization.
+
+Theme representation note: the global `now.md` themes section must be re-entry-friendly. Each theme entry should carry an owner path or an explicit stub target, and throttling/promotion rules should be centralized here.
 
 ## References
 

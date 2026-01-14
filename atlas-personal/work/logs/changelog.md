@@ -126,3 +126,13 @@ Append-only execution history.
 
 **Verification**: Project scaffold present
 **Open**: None
+
+## [2026-01-14] PROJECT
+
+**Artifact**: work/projects
+**Spec**: atlas-tui stub
+
+- **Added**: `work/projects/devOS/atlas-tui/` wrapper
+
+**Verification**: Wrapper scaffold present
+**Open**: None

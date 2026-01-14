@@ -14,6 +14,8 @@
 
 Define the design space for mechanically easing operator approval of a derived breakdown (`polo.md`) from a semi-structured operator note (`marco.md`). The project focuses on (1) graded verification (non-binary confidence that the documents map) and (2) deterministic pre-processing to restructure marco-style input into a first-pass polo-style breakdown, using surface features (Obsidian-style structure) without automating authority: operator termination remains the only closure.
 
+Compaction note: MARCO->typed POLO->deterministic propagation is treated as a concrete compaction instance. A cross-cutting umbrella project exists at `work/projects/devOS/compaction/` to reduce term drift.
+
 ---
 
 ## Problem Definition: The Marco-Polo Challenge (High-Leverage, High-Reliability)

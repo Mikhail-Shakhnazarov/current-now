@@ -15,13 +15,29 @@ Write naturally. Use explicit question marks for uncertainty.
 
 Project mention annotation (v1):
 
-Use `@devOS/intake-pipeline` or `@writeOS/marco-polo` to mark that an item mentions a project. This is a hint for compilation only, not a routing command.
+`@devOS/intake-pipeline` or `@writeOS/marco-polo` marks that an item mentions a project. This is a hint for compilation only, not a routing command.
+
+Priority annotation (v1):
+
+`PRIO: high|med|low` can be appended to an item line to mark priority as a hint for compilation and later promotion.
+
+Direction block (optional):
+
+A block starting with `BEGIN DIRECTION` and ending with `END DIRECTION` can be used for exploratory synthesis. Compilation should treat direction blocks as proposals and questions, not as authoritative facts.
 
 1. 
 
 2. 
 
 3. 
+
+---
+
+BEGIN DIRECTION
+
+(optional)
+
+END DIRECTION
 
 ---
 

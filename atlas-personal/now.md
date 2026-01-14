@@ -39,6 +39,18 @@ Consider a RAG-ready context pack for each repo/project (structured, portable su
 
 Consider explicit two-step sequential processing with a handoff point (plan/interpret -> agentic/execute), designed so work can be parallelized where safe. The key is to make plans and artifacts optimized for parallel execution (independent threads, clear boundaries, deterministic propagation). This is tracked in `work/projects/devOS/intake-pipeline/`.
 
+## Themes (Throttled)
+
+Publishable components: `work/projects/devOS/marcopolo/` (standalone demo), `work/projects/devOS/marcopolo-atlas/` (in-house glue), `work/projects/devOS/intake-pipeline/` (pipeline proposal).
+
+System imaging: stub pending (target: `work/projects/devOS/system-imaging/`).
+
+Multimodal coherence: stub pending (target: `work/projects/writeOS/multimodal-binding/`).
+
+Patreon: planning thread (no project stub yet).
+
+Throttling and promotion rules belong to `work/projects/devOS/intake-pipeline/`. These theme lines should always carry an owner path or a stub target so re-entry is immediate.
+
 ## Preflight
 
 - Run: `python atlas-personal/desk/tools/repo_hygiene.py --check`

@@ -33,6 +33,11 @@ Taxonomy:
   - Specs: `devOS/intake-pipeline/specs/`
   - Repo: `devOS/intake-pipeline/repo/`
 
+- `devOS/atlas-tui/` -- active (stub)
+  - Now: `devOS/atlas-tui/now.md`
+  - Specs: `devOS/atlas-tui/specs/`
+  - Repo: `devOS/atlas-tui/repo/`
+
 ## writeOS
 
 - `writeOS/marco-polo/` -- active (pilot)
