@@ -6,12 +6,14 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from textual import events
 from textual.app import ComposeResult
-from textual.containers import Vertical
+from textual.containers import Horizontal, Vertical
 from textual.screen import ModalScreen
-from textual.widgets import Static, Markdown
+from textual.widgets import Button, Input, Markdown, Select, Static, TextArea
 
 from ..models import Workspace
+from ..state_store import UIContextPrefs
 
 def _safe_read_text(path: Path, max_bytes: int = 60_000) -> str:
     data = path.read_bytes()
@@ -19,6 +21,39 @@ def _safe_read_text(path: Path, max_bytes: int = 60_000) -> str:
         return f"[binary file] {path.name} ({len(data)} bytes)"
     data = data[:max_bytes]
     return data.decode("utf-8", errors="replace")
+
+class ChatComposer(TextArea):
+    """Message composer that supports chat-style submit.
+
+    - Enter: submit message
+    - Shift+Enter: newline
+
+    This is implemented here because TextArea may consume Ctrl+* keys and prevent
+    app-level bindings from firing (terminal + Textual version dependent).
+    """
+
+    async def on_key(self, event: events.Key) -> None:
+        key = event.key
+
+        if key == "enter":
+            await self.app.action_submit()  # type: ignore[attr-defined]
+            event.stop()
+            return
+
+        if key == "f2":
+            await self.app.action_focus_cycle()  # type: ignore[attr-defined]
+            event.stop()
+            return
+
+        if key == "f1":
+            await self.app.action_toggle_help()  # type: ignore[attr-defined]
+            event.stop()
+            return
+
+        if key in {"escape", "esc"}:
+            await self.app.action_escape()  # type: ignore[attr-defined]
+            event.stop()
+            return
 
 class StatusBar(Static):
     def __init__(self) -> None:
@@ -30,6 +65,9 @@ class StatusBar(Static):
         self._engine_cmd = ""
         self._chat_log_state = "off"
         self._chat_log_path = ""
+        self._glass_state = "off"
+        self._glass_url = ""
+        self._details_visible = False
 
     def set_engine_cmd(self, cmd: str) -> None:
         self._engine_cmd = cmd
@@ -58,6 +96,15 @@ class StatusBar(Static):
         self._chat_log_path = path
         self._refresh()
 
+    def set_glass(self, state: str, url: str = "") -> None:
+        self._glass_state = state
+        self._glass_url = url
+        self._refresh()
+
+    def set_details_visible(self, visible: bool) -> None:
+        self._details_visible = visible
+        self._refresh()
+
     def flash(self, msg: str) -> None:
         # lightweight: just set as last action
         self._last_action = msg
@@ -68,15 +115,21 @@ class StatusBar(Static):
         parts = [
             f"[{busy}]",
             f"engine={self._engine_status}",
+            f"glass={self._glass_state}",
             f"chatlog={self._chat_log_state}",
         ]
-        if self._last_action:
-            parts.append(f"last={self._last_action}")
-        if self._last_log:
-            parts.append(f"log={self._last_log}")
+        if self._details_visible:
+            if self._glass_url:
+                parts.append(f"glass_url={self._glass_url}")
+            if self._last_action:
+                parts.append(f"last={self._last_action}")
+            if self._last_log:
+                parts.append(f"log={self._last_log}")
         self.update(" | ".join(parts))
 
 class InspectionPanel(Static):
+    can_focus = True
+
     def __init__(self) -> None:
         super().__init__("")
         self.update("No submissions yet.")
@@ -100,23 +153,25 @@ class InspectionPanel(Static):
 
         lines = [
             "Last assembly",
-            f"- request: {request_id}",
-            f"- mode/provider/model: {mode} / {provider} / {model}",
-            f"- system chars: {system_len}",
+            f"request: {request_id}",
+            f"{mode} / {provider} / {model}",
+            f"system_chars: {system_len}",
         ]
         if sel_count is not None:
-            lines.append(f"- selected artifacts: {sel_count}")
+            lines.append(f"selected_artifacts: {sel_count}")
         if assemble_ms is not None:
-            lines.append(f"- assemble ms: {assemble_ms}")
+            lines.append(f"assemble_ms: {assemble_ms}")
         lines += [
-            f"- log: {log_path}",
+            f"log: {log_path}",
             "",
-            "Preview:",
+            "Preview (truncated):",
             system_preview.replace("\n", "\n"),
         ]
         self.update("\n".join(lines))
 
 class ProjectPanel(Static):
+    can_focus = True
+
     def __init__(self) -> None:
         super().__init__("")
 
@@ -133,6 +188,10 @@ class ProjectPanel(Static):
         now_preview = ""
         if now.exists():
             now_preview = _safe_read_text(now, max_bytes=6000)
+        preview_lines = now_preview.splitlines()
+        max_lines = 28
+        truncated = len(preview_lines) > max_lines
+        preview_text = "\n".join(preview_lines[:max_lines])
         spec_files = []
         if specs.exists():
             spec_files = sorted([p for p in specs.glob("**/*") if p.is_file()], key=lambda p: p.stat().st_mtime, reverse=True)[:12]
@@ -147,7 +206,7 @@ class ProjectPanel(Static):
             "Wrapper detected",
             "",
             "now.md (preview):",
-            (now_preview[:1200] + ("...\n" if len(now_preview) > 1200 else "")),
+            (preview_text + ("\n... (truncated; open now.md for full view)" if truncated else "")),
             "",
             "specs (recent):",
             fmt_list(spec_files),
@@ -190,17 +249,17 @@ class HelpOverlay(ModalScreen):
     def compose(self) -> ComposeResult:
         text = """# Atlas TUI - keybindings
 
-- Ctrl+Enter: submit message
-- Ctrl+1 / Ctrl+2 / Ctrl+3: focus repo / chat / project
-- F5: refresh repo tree
-- Ctrl+K: toggle this help
-- Ctrl+L: toggle chat transcript logging
-- Ctrl+R: restart engine child
-- Esc: close / return focus
+ - Enter: submit message (in composer)
+ - Shift+Enter: newline (in composer)
+ - F1: toggle help
+ - F2: cycle focus (repo > chat > project)
+ - Ctrl+C: force quit (no confirmation)
+ - Esc: close modal or quit (with confirmation) if no modal
 
 Notes:
 - v2 does not call providers and does not modify repo files.
 - Inspection logs are written on every submit (see status bar for last path).
+ - Other actions are available via top-bar buttons (Refresh, Chat Log, Details, Prefs, Restart, Quit).
 """
         yield Markdown(text)
 
@@ -226,3 +285,91 @@ class FilePreviewScreen(ModalScreen):
         yield Markdown(
             f"# Preview\n\n**{self.path}**\n\nPress Esc or q to close.\n\n```\n{content}\n```"
         )
+
+
+class ContextPrefsScreen(ModalScreen[Optional[UIContextPrefs]]):
+    BINDINGS = [
+        ("escape", "cancel", "Cancel"),
+    ]
+
+    def __init__(self, prefs: UIContextPrefs) -> None:
+        super().__init__()
+        self._prefs = UIContextPrefs(
+            context_profile=prefs.context_profile,
+            budget_chars=prefs.budget_chars,
+            pinned_paths=list(prefs.pinned_paths),
+            excluded_paths=list(prefs.excluded_paths),
+        )
+
+    def action_cancel(self) -> None:
+        self.dismiss(None)
+
+    def compose(self) -> ComposeResult:
+        yield Markdown("# Context prefs (repo-relative paths)")
+
+        self.profile_select = Select([(p, p) for p in ["minimal", "repo", "project", "debug"]], value=self._prefs.context_profile)
+        yield Static("Profile:")
+        yield self.profile_select
+
+        self.budget_input = Input(value=str(self._prefs.budget_chars), placeholder="budget chars")
+        yield Static("Budget (chars):")
+        yield self.budget_input
+
+        self.pins_area = TextArea()
+        self.pins_area.text = "\n".join(self._prefs.pinned_paths)
+        self.pins_area.placeholder = "Pinned paths (one per line, repo-relative)"
+        yield Static("Pinned:")
+        yield self.pins_area
+
+        self.excl_area = TextArea()
+        self.excl_area.text = "\n".join(self._prefs.excluded_paths)
+        self.excl_area.placeholder = "Excluded paths (one per line, repo-relative)"
+        yield Static("Excluded:")
+        yield self.excl_area
+
+        with Horizontal():
+            yield Button("Save", id="ctx_save", variant="primary")
+            yield Button("Cancel", id="ctx_cancel")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "ctx_cancel":
+            self.dismiss(None)
+            return
+
+        prof = self.profile_select.value or "repo"
+        try:
+            budget = int((self.budget_input.value or "").strip())
+        except Exception:
+            budget = self._prefs.budget_chars
+
+        pins = [p.strip() for p in (self.pins_area.text or "").splitlines() if p.strip()]
+        excl = [p.strip() for p in (self.excl_area.text or "").splitlines() if p.strip()]
+
+        self._prefs.context_profile = prof  # type: ignore[assignment]
+        self._prefs.budget_chars = budget
+        self._prefs.pinned_paths = pins
+        self._prefs.excluded_paths = excl
+
+        self.dismiss(self._prefs)
+
+
+class QuitConfirmScreen(ModalScreen[bool]):
+    BINDINGS = [
+        ("escape", "cancel", "Cancel"),
+        ("esc", "cancel", "Cancel"),
+    ]
+
+    def action_cancel(self) -> None:
+        self.dismiss(False)
+
+    def compose(self) -> ComposeResult:
+        yield Markdown("## Quit\n\nSure you want to quit?")
+        with Horizontal():
+            yield Button("Quit", id="quit_yes", variant="error")
+            yield Button("Cancel", id="quit_no")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "quit_yes":
+            self.dismiss(True)
+            return
+        self.dismiss(False)

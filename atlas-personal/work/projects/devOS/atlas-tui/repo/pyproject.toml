@@ -23,4 +23,4 @@ package-dir = {"" = "src"}
 where = ["src"]
 
 [tool.setuptools.package-data]
-atlas_tui = ["assets/atlas/**/*"]
+atlas_tui = ["assets/atlas/**/*", "web/static/**/*"]

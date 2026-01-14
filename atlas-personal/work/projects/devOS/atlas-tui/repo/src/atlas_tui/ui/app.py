@@ -9,7 +9,7 @@ from typing import Optional
 
 from textual.app import App, ComposeResult
 from textual.containers import Container, Horizontal, Vertical
-from textual.widgets import DirectoryTree, Footer, Header, Static, TextArea, Select
+from textual.widgets import Button, DirectoryTree, Footer, Header, Static, TextArea, Select
 from textual import on
 from textual.message import Message
 from textual.screen import ModalScreen
@@ -17,8 +17,19 @@ from textual.screen import ModalScreen
 from ..models import EngineInput, Mode, Provider, Workspace
 from ..engine_client import EngineClient
 from ..log_writer import write_assembled_log, write_chat_log, log_base_dir
+from ..state_store import UIContextPrefs, load_prefs, save_prefs
 from ..workspace import discover_workspace
-from .widgets import StatusBar, InspectionPanel, ProjectPanel, HelpOverlay, FilePreviewScreen, RepoHealthPanel
+from .widgets import (
+    StatusBar,
+    InspectionPanel,
+    ProjectPanel,
+    HelpOverlay,
+    FilePreviewScreen,
+    RepoHealthPanel,
+    ChatComposer,
+    ContextPrefsScreen,
+    QuitConfirmScreen,
+)
 
 DEFAULT_MODE: Mode = "interpret"
 DEFAULT_PROVIDER: Provider = "openai"
@@ -43,7 +54,13 @@ class AtlasTUIApp(App):
 
     #left, #center, #right {
         width: 1fr;
-        border: solid $primary;
+        border: solid $surface;
+    }
+
+    #left:focus-within,
+    #center:focus-within,
+    #right:focus-within {
+        border: solid $accent;
     }
 
     #left { width: 34%; }
@@ -51,7 +68,7 @@ class AtlasTUIApp(App):
     #right { width: 24%; }
 
     #composer {
-        height: 6;
+        height: 7;
     }
 
     .panel-title {
@@ -66,14 +83,8 @@ class AtlasTUIApp(App):
     """
 
     BINDINGS = [
-        ("ctrl+enter", "submit", "Submit"),
-        ("ctrl+1", "focus_repo", "Focus repo"),
-        ("ctrl+2", "focus_chat", "Focus chat"),
-        ("ctrl+3", "focus_project", "Focus project"),
-        ("f5", "refresh_tree", "Refresh tree"),
-        ("ctrl+k", "toggle_help", "Help"),
-        ("ctrl+l", "toggle_chat_log", "Toggle chat log"),
-        ("ctrl+r", "restart_engine", "Restart engine"),
+        ("f1", "toggle_help", "Help"),
+        ("f2", "focus_cycle", "Cycle focus"),
         ("escape", "escape", "Close/Back"),
     ]
 
@@ -84,6 +95,7 @@ class AtlasTUIApp(App):
         engine_cmd_str: str,
         preview_chars: int = 800,
         engine_timeout_s: float = 60.0,
+        glass_url: Optional[str] = None,
     ) -> None:
         super().__init__()
         self.workspace = workspace
@@ -91,6 +103,7 @@ class AtlasTUIApp(App):
         self.engine_cmd_str = engine_cmd_str
         self.preview_chars = preview_chars
         self.engine_timeout_s = engine_timeout_s
+        self.glass_url = glass_url
 
         self.mode: Mode = DEFAULT_MODE
         self.provider: Provider = DEFAULT_PROVIDER
@@ -104,6 +117,9 @@ class AtlasTUIApp(App):
         self._chat_logging_enabled: bool = False
         self._chat_log_path: Optional[Path] = None
 
+        self._repo_root_path = Path(self.workspace.repo_root).resolve()
+        self.prefs: UIContextPrefs = load_prefs(self.workspace.repo_root, self.workspace.project_root)
+        self._quit_confirm_pending: bool = False
         # Transcript buffer is maintained separately from UI rendering.
         # This avoids early-render crashes when widgets are not fully sized.
         self._transcript_lines: list[str] = []
@@ -114,7 +130,7 @@ class AtlasTUIApp(App):
 
         # Top controls
         with Horizontal(id="topbar"):
-            self.workspace_label = Static(self._workspace_text(), id="workspace_label")
+            self.workspace_label = Static(self._workspace_identity_text(), id="workspace_label")
             yield self.workspace_label
 
             mode_opts = [(m, m) for m in ["interpret", "plan", "execute"]]
@@ -129,11 +145,28 @@ class AtlasTUIApp(App):
             self.model_select = Select(model_opts, value=self.model, id="model_select")
             yield self.model_select
 
+            self.btn_help = Button("Help", id="btn_help")
+            self.btn_refresh = Button("Refresh", id="btn_refresh")
+            self.btn_chatlog = Button("Chat Log", id="btn_chatlog")
+            self.btn_details = Button("Details", id="btn_details")
+            self.btn_prefs = Button("Prefs", id="btn_prefs")
+            self.btn_restart = Button("Restart", id="btn_restart")
+            self.btn_quit = Button("Quit", id="btn_quit", variant="error")
+            yield self.btn_help
+            yield self.btn_refresh
+            yield self.btn_chatlog
+            yield self.btn_details
+            yield self.btn_prefs
+            yield self.btn_restart
+            yield self.btn_quit
+
         with Horizontal(id="main"):
             with Vertical(id="left"):
                 yield Static("Repository", classes="panel-title")
                 self.repo_health = RepoHealthPanel()
                 yield self.repo_health
+                self.selected_path_label = Static("selected_path: (none)", id="selected_path_label")
+                yield self.selected_path_label
                 self.repo_tree = DirectoryTree(Path(self.workspace.repo_root), id="repo_tree")
                 yield self.repo_tree
 
@@ -150,9 +183,9 @@ class AtlasTUIApp(App):
                 except Exception:
                     pass
                 yield self.transcript
-                self.composer = TextArea(id="composer")
+                self.composer = ChatComposer(id="composer")
                 try:
-                    self.composer.placeholder = "Type message...  (Ctrl+Enter to submit)"
+                    self.composer.placeholder = "Type message...  (Enter to submit; Shift+Enter for newline)"
                 except Exception:
                     pass
                 yield self.composer
@@ -170,12 +203,7 @@ class AtlasTUIApp(App):
 
     async def on_mount(self) -> None:
         self.set_focus(self.composer)
-        # Avoid writing to transcript widgets during mount; queue lines and flush on_ready.
-        self._append_transcript(f"[atlas-tui] workspace resolved: repo_root={self.workspace.repo_root}")
-        if self.workspace.project_root:
-            self._append_transcript(f"[atlas-tui] wrapper detected: project_root={self.workspace.project_root}")
-        else:
-            self._append_transcript("[atlas-tui] no wrapper detected (using .git root)")
+        # Keep identity out of the transcript; show in header/status instead.
 
     async def on_ready(self) -> None:
         # UI layout is ready; safe to render transcript.
@@ -188,6 +216,7 @@ class AtlasTUIApp(App):
         # Initialize panels
         await self._refresh_project_panel()
         await self._refresh_repo_health()
+        self._update_selected_path_label()
 
         # Start engine
         self._engine = EngineClient(cmd=self.engine_cmd, workspace=self.workspace, timeout_s=self.engine_timeout_s)
@@ -198,11 +227,31 @@ class AtlasTUIApp(App):
             self.status_bar.set_engine_status(f"engine start failed: {e}")
 
         self.status_bar.set_engine_cmd(self.engine_cmd_str)
+        if self.glass_url:
+            self.status_bar.set_glass("on", self.glass_url)
         self.status_bar.set_idle()
 
-    def _workspace_text(self) -> str:
-        pr = self.workspace.project_root or "None"
-        return f"repo: {self.workspace.repo_root} | project: {pr}"
+    def _workspace_identity_text(self) -> str:
+        repo_name = Path(self.workspace.repo_root).name or "repo"
+        proj_name = Path(self.workspace.project_root).name if self.workspace.project_root else "None"
+        wrapper = "yes" if self.workspace.project_root else "no"
+        return f"repo:{repo_name} project:{proj_name} wrapper:{wrapper}"
+
+    def _short_path(self, p: Optional[Path]) -> str:
+        if not p:
+            return "(none)"
+        try:
+            if self.workspace.project_root:
+                base = Path(self.workspace.project_root).resolve()
+                return str(p.resolve().relative_to(base)).replace("\\", "/")
+            base = Path(self.workspace.repo_root).resolve()
+            return str(p.resolve().relative_to(base)).replace("\\", "/")
+        except Exception:
+            return p.name
+
+    def _update_selected_path_label(self) -> None:
+        sel = self._selected_path() or "(none)"
+        self.selected_path_label.update(f"selected_path: {sel}")
 
     def _get_textarea_text(self, widget: TextArea) -> str:
         for attr in ("text", "value"):
@@ -284,6 +333,10 @@ class AtlasTUIApp(App):
         ui_state = {
             "focused_panel": self._focused_panel_name(),
             "selected_path": self._selected_path(),
+            "context_profile": self.prefs.context_profile,
+            "budget_chars": self.prefs.budget_chars,
+            "pinned_paths": list(self.prefs.pinned_paths),
+            "excluded_paths": list(self.prefs.excluded_paths),
         }
 
         engine_input = EngineInput(
@@ -316,7 +369,7 @@ class AtlasTUIApp(App):
             preview = out.assembled_context.system[: min(self.preview_chars, sys_len)]
             self.inspection_panel.update_summary(
                 request_id=request_id,
-                log_path=str(log_path),
+                log_path=self._short_path(log_path),
                 mode=self.mode,
                 provider=self.provider,
                 model=self.model,
@@ -325,8 +378,10 @@ class AtlasTUIApp(App):
                 diagnostics=out.diagnostics,
             )
 
-            self.status_bar.set_last_log(str(log_path))
-            self._append_transcript(f"[engine] assembled context (len={sys_len}) - log: {log_path}")
+            self.status_bar.set_last_log(self._short_path(log_path))
+            self._append_transcript(
+                f"[engine] assembled context (len={sys_len}) - log: {self._short_path(log_path)}"
+            )
 
         except Exception as e:
             self._append_transcript(f"[error] {e}")
@@ -352,7 +407,9 @@ class AtlasTUIApp(App):
         try:
             node = self.repo_tree.cursor_node
             if node and node.data:
-                return str(node.data.path)
+                p = Path(node.data.path).resolve()
+                rel = p.relative_to(self._repo_root_path)
+                return rel.as_posix()
         except Exception:
             return None
         return None
@@ -369,6 +426,22 @@ class AtlasTUIApp(App):
         self.set_focus(self.project_panel)
         self.status_bar.flash("focus: project")
 
+    async def action_focus_cycle(self) -> None:
+        order = ["repo", "chat", "project"]
+        current = self._focused_panel_name()
+        try:
+            idx = order.index(current)
+        except ValueError:
+            idx = 0
+        nxt = order[(idx + 1) % len(order)]
+        if nxt == "repo":
+            await self.action_focus_repo()
+            return
+        if nxt == "project":
+            await self.action_focus_project()
+            return
+        await self.action_focus_chat()
+
     async def action_refresh_tree(self) -> None:
         # DirectoryTree has a reload method in newer versions; rebuild if absent.
         try:
@@ -378,17 +451,32 @@ class AtlasTUIApp(App):
             self.repo_tree = DirectoryTree(Path(self.workspace.repo_root), id="repo_tree")
             self.query_one("#left").mount(self.repo_tree)
         await self._refresh_repo_health()
+        self._update_selected_path_label()
         self.status_bar.flash("repo tree refreshed")
 
     async def action_toggle_help(self) -> None:
         await self.push_screen(HelpOverlay(self))
+
+    async def action_edit_context(self) -> None:
+        prefs = await self.push_screen_wait(ContextPrefsScreen(self.prefs))
+        if not isinstance(prefs, UIContextPrefs):
+            self.status_bar.flash("context prefs canceled")
+            return
+        self.prefs = prefs
+        try:
+            path = save_prefs(self.workspace.repo_root, self.workspace.project_root, self.prefs)
+            self._append_transcript(f"[atlas-tui] context prefs saved: {path}")
+            self.status_bar.flash("context prefs saved")
+        except Exception as e:
+            self._append_transcript(f"[error] failed to save prefs: {e}")
+            self.status_bar.flash(f"save prefs failed: {e}")
 
     async def action_escape(self) -> None:
         # Close modal if present; else return focus to composer.
         if len(self.screen_stack) > 1:
             await self.pop_screen()
         else:
-            self.set_focus(self.composer)
+            await self.action_quit()
 
     async def action_toggle_chat_log(self) -> None:
         self._chat_logging_enabled = not self._chat_logging_enabled
@@ -413,6 +501,49 @@ class AtlasTUIApp(App):
         finally:
             self.status_bar.set_engine_status(self._engine.status.message if self._engine else "n/a")
             self._set_idle()
+
+    async def _request_quit_confirm(self) -> None:
+        if self._quit_confirm_pending:
+            return
+        self._quit_confirm_pending = True
+        try:
+            confirm = await self.push_screen_wait(QuitConfirmScreen())
+            if confirm:
+                self.exit()
+        finally:
+            self._quit_confirm_pending = False
+
+    async def action_quit(self) -> None:
+        await self._request_quit_confirm()
+
+    async def on_button_pressed(self, event: Button.Pressed) -> None:
+        bid = event.button.id
+        if bid == "btn_help":
+            await self.action_toggle_help()
+            return
+        if bid == "btn_refresh":
+            await self.action_refresh_tree()
+            return
+        if bid == "btn_chatlog":
+            await self.action_toggle_chat_log()
+            return
+        if bid == "btn_details":
+            self.status_bar.set_details_visible(not self.status_bar._details_visible)
+            return
+        if bid == "btn_prefs":
+            await self.action_edit_context()
+            return
+        if bid == "btn_restart":
+            await self.action_restart_engine()
+            return
+        if bid == "btn_quit":
+            await self.action_quit()
+            return
+
+    async def on_key(self, event) -> None:
+        if event.key in {"escape", "esc"}:
+            await self.action_escape()
+            event.stop()
 
     @on(Select.Changed, "#mode_select")
     async def _mode_changed(self, event: Select.Changed) -> None:
@@ -441,3 +572,4 @@ class AtlasTUIApp(App):
         # Open file preview modal.
         path = event.path
         await self.push_screen(FilePreviewScreen(path=path))
+        self._update_selected_path_label()

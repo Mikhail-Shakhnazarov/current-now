@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 from .models import EngineInput, EngineOutput, Workspace
+from .state_store import write_latest_pointer
 
 DEFAULT_PREVIEW_CHARS = 800
 DEFAULT_MAX_STORED_SYSTEM_CHARS = None  # set to int to hard-cap stored system fields (optional)
@@ -77,6 +78,11 @@ def write_assembled_log(
     fname = datetime.now().strftime("%Y%m%d_%H%M%S") + f"_{request_id}.json"
     path = base / fname
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    try:
+        write_latest_pointer(workspace.repo_root, workspace.project_root, str(path), request_id)
+    except Exception:
+        pass
     return path
 
 def write_chat_log(

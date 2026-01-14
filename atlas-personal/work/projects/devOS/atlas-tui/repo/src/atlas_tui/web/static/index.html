@@ -1,0 +1,300 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Atlas Glass</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #f7f7f7;
+      --fg: #111;
+      --muted: #666;
+      --card: #fff;
+      --border: #ddd;
+      --accent: #1f6feb;
+      --warn: #b54708;
+      --code-bg: #f2f2f2;
+      --pre-bg: #111;
+      --pre-fg: #ddd;
+    }
+    body.dark {
+      --bg: #0e1116;
+      --fg: #e7e7e7;
+      --muted: #9aa0a6;
+      --card: #141923;
+      --border: #263042;
+      --accent: #5aa2ff;
+      --warn: #ffb86b;
+      --code-bg: #1c2433;
+      --pre-bg: #0b0f16;
+      --pre-fg: #dcdcdc;
+    }
+    body { font-family: ui-sans-serif, system-ui; margin: 16px; line-height: 1.35; background: var(--bg); color: var(--fg); }
+    .muted { color: var(--muted); }
+    .row { display: flex; gap: 12px; flex-wrap: wrap; }
+    .card { border: 1px solid var(--border); border-radius: 10px; padding: 12px; flex: 1 1 320px; background: var(--card); }
+    .bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .badge { border: 1px solid var(--border); border-radius: 999px; padding: 2px 8px; font-size: 12px; }
+    .accent { border-color: var(--accent); color: var(--accent); }
+    pre { white-space: pre-wrap; word-break: break-word; background: var(--pre-bg); color: var(--pre-fg); padding: 12px; border-radius: 10px; overflow: auto; max-height: 50vh; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border-bottom: 1px solid var(--border); padding: 6px 8px; text-align: left; font-size: 13px; }
+    th { position: sticky; top: 0; background: var(--card); }
+    details > summary { cursor: pointer; }
+    code { background: var(--code-bg); padding: 0 4px; border-radius: 4px; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 10px; font-size: 13px; }
+    .grid div { display: flex; justify-content: space-between; gap: 8px; }
+    .tabs { display: flex; gap: 8px; margin: 8px 0; }
+    .tabs button { border: 1px solid var(--border); background: var(--card); color: var(--fg); padding: 4px 10px; border-radius: 8px; cursor: pointer; }
+    .tabs button.active { border-color: var(--accent); color: var(--accent); }
+    .actions { display: flex; gap: 8px; }
+  </style>
+</head>
+<body>
+  <div class="bar" style="justify-content: space-between; align-items: baseline;">
+    <h1 style="margin:0">Atlas Glass</h1>
+    <div class="actions">
+      <button id="theme_btn">Toggle theme</button>
+    </div>
+  </div>
+
+  <div id="header">
+    <div id="line1" class="bar muted"></div>
+    <div id="line2" class="bar muted"></div>
+    <details id="roots_details" class="muted" style="margin-top:6px;">
+      <summary>Absolute roots</summary>
+      <pre id="abs_roots"></pre>
+    </details>
+  </div>
+
+  <div class="tabs">
+    <button data-tab="summary" class="active">Summary</button>
+    <button data-tab="json">JSON</button>
+    <button data-tab="system">System</button>
+    <button data-tab="provider">ProviderRequest</button>
+  </div>
+
+  <div id="tab_summary">
+    <div class="row">
+      <div class="card">
+        <h2 style="margin-top:0">Context</h2>
+        <div id="context_grid" class="grid"></div>
+        <details>
+          <summary>System preview</summary>
+          <pre id="sys_preview"></pre>
+        </details>
+      </div>
+
+      <div class="card">
+        <h2 style="margin-top:0">Selected artifacts</h2>
+        <input id="filter_input" placeholder="filter paths/reasons" />
+        <div id="artifacts" class="muted" style="margin-top:8px;">(none)</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab_json" style="display:none">
+    <div class="card">
+      <div class="bar" style="justify-content: space-between;">
+        <strong>Raw JSON</strong>
+        <div class="actions">
+          <button id="copy_json">Copy</button>
+          <button id="download_json">Download</button>
+        </div>
+      </div>
+      <pre id="raw"></pre>
+    </div>
+  </div>
+
+  <div id="tab_system" style="display:none">
+    <div class="card">
+      <strong>Assembled system</strong>
+      <pre id="system_full"></pre>
+    </div>
+  </div>
+
+  <div id="tab_provider" style="display:none">
+    <div class="card">
+      <strong>Provider request</strong>
+      <pre id="provider_full"></pre>
+    </div>
+  </div>
+
+<script>
+let lastRequestId = null;
+let lastData = null;
+let lastSelected = [];
+
+function esc(s){
+  return (s ?? "").toString()
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;");
+}
+
+function setHtml(id, html){ document.getElementById(id).innerHTML = html; }
+function setText(id, txt){ document.getElementById(id).textContent = txt ?? ""; }
+
+function relPath(base, p){
+  if(!base || !p) return p || "";
+  const b = base.replaceAll("\\","/").replace(/\/+$/,"");
+  const x = p.replaceAll("\\","/");
+  if(x.toLowerCase().startsWith(b.toLowerCase())){
+    const rest = x.slice(b.length);
+    return rest.startsWith("/") ? rest.slice(1) : rest;
+  }
+  return p;
+}
+
+function shortName(path){
+  if(!path) return "None";
+  const p = path.replaceAll("\\","/").split("/");
+  return p[p.length-1] || path;
+}
+
+function copyText(txt){
+  try { navigator.clipboard.writeText(txt); } catch(e) {}
+}
+
+function renderSelectedArtifacts(sel, filter){
+  if(!Array.isArray(sel) || sel.length === 0){
+    setHtml("artifacts", "<span class=\"muted\">(none)</span>");
+    return;
+  }
+
+  let items = sel;
+  const f = (filter || "").toLowerCase();
+  if(f){
+    items = sel.filter(it => JSON.stringify(it).toLowerCase().includes(f));
+  }
+
+  const isObject = (typeof items[0] === "object") && (items[0] !== null);
+  if(!isObject){
+    const rows = items.map(s => `<tr><td><code>${esc(s)}</code></td></tr>`).join("");
+    setHtml("artifacts", `<table><thead><tr><th>artifact</th></tr></thead><tbody>${rows}</tbody></table>`);
+    return;
+  }
+
+  const rows = items.map(it =>
+    `<tr><td><code>${esc(it.path ?? "")}</code></td><td>${esc(it.reason ?? "")}</td><td>${esc(it.bytes ?? "")}</td><td>${esc(it.kind ?? "")}</td><td>${esc(it.role ?? "")}</td></tr>`
+  ).join("");
+  setHtml("artifacts",
+    `<table><thead><tr><th>path</th><th>reason</th><th>bytes</th><th>kind</th><th>role</th></tr></thead><tbody>${rows}</tbody></table>`
+  );
+}
+
+function setTab(name){
+  const tabs = ["summary","json","system","provider"];
+  tabs.forEach(t => {
+    document.getElementById("tab_"+t).style.display = (t === name) ? "block" : "none";
+    document.querySelector(`button[data-tab='${t}']`).classList.toggle("active", t === name);
+  });
+}
+
+function render(data){
+  lastData = data;
+  const rid = data?.request_id || null;
+  const ws = data?.workspace || {};
+  const meta = data?._latest_meta || {};
+  const logPath = data?._log_path || meta?.last_log_path || "";
+  const ts = data?.ts || meta?.updated_ts || "";
+
+  const mode = data?.mode || "";
+  const provider = data?.provider || "";
+  const model = data?.model || "";
+
+  const repoRoot = ws.repo_root || "";
+  const projRoot = ws.project_root || "";
+  const repoName = shortName(repoRoot);
+  const projName = projRoot ? shortName(projRoot) : "None";
+  const logRel = relPath(projRoot || repoRoot, logPath);
+
+  setHtml("line1",
+    `<span class="badge accent">${esc(mode)}</span>` +
+    `<span class="badge">${esc(provider)}/${esc(model)}</span>` +
+    `<span>request_id=<code>${esc(rid)}</code></span>` +
+    (ts ? `<span>ts=${esc(ts)}</span>` : "")
+  );
+  setHtml("line2",
+    `<span>repo=<b>${esc(repoName)}</b></span>` +
+    `<span>project=<b>${esc(projName)}</b></span>` +
+    `<span>log=<code>${esc(logRel || "(none)")}</code></span>` +
+    `<button id="copy_log">Copy log path</button>` +
+    `<button id="copy_rid">Copy request_id</button>`
+  );
+
+  setText("abs_roots", `repo_root: ${repoRoot}\nproject_root: ${projRoot || "None"}`);
+
+  document.getElementById("copy_log").onclick = () => copyText(logPath || "");
+  document.getElementById("copy_rid").onclick = () => copyText(rid || "");
+
+  const ac = data?.assembled_context || {};
+  const sysLen = ac?.system_length_chars ?? "";
+  const sysPrev = ac?.system_preview?.text ?? "";
+  setText("sys_preview", sysPrev);
+
+  const ui = data?.ui_state || {};
+  const diag = data?.diagnostics || {};
+  const budget = diag?.budgets || {};
+  const focusedPath = ui?.selected_path || "(none)";
+
+  const grid = [
+    ["system_chars", sysLen],
+    ["budget_target", budget?.target ?? ""],
+    ["est_used_bytes", budget?.estimated_used_bytes ?? ""],
+    ["selected_artifacts", (diag?.selected_artifacts || []).length],
+    ["assemble_ms", (diag?.timings_ms || {})?.assemble ?? ""],
+    ["focused_path", focusedPath],
+    ["context_profile", ui?.context_profile || ""],
+  ];
+  setHtml("context_grid", grid.map(([k,v]) => `<div><span>${esc(k)}</span><code>${esc(v)}</code></div>`).join(""));
+
+  const sel = diag?.selected_artifacts || [];
+  lastSelected = sel;
+  renderSelectedArtifacts(sel, document.getElementById("filter_input").value || "");
+
+  setText("raw", JSON.stringify(data, null, 2));
+  setText("system_full", ac?.system ?? "");
+  setText("provider_full", JSON.stringify(data?.provider_request || {}, null, 2));
+  lastRequestId = rid;
+}
+
+async function tick(){
+  try{
+    const r = await fetch("/api/latest", { cache: "no-store" });
+    const j = await r.json();
+    if(j.status !== "ok") return;
+    const data = j.data;
+    if(data?.request_id && data.request_id !== lastRequestId){
+      render(data);
+    }
+  }catch(e){}
+}
+
+document.getElementById("filter_input").addEventListener("input", (e) => {
+  renderSelectedArtifacts(lastSelected, e.target.value || "");
+});
+
+document.querySelectorAll(".tabs button").forEach(btn => {
+  btn.onclick = () => setTab(btn.dataset.tab);
+});
+
+document.getElementById("copy_json").onclick = () => copyText(JSON.stringify(lastData || {}, null, 2));
+document.getElementById("download_json").onclick = () => {
+  const blob = new Blob([JSON.stringify(lastData || {}, null, 2)], {type: "application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "atlas-glass.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+};
+
+const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+if(prefersDark) document.body.classList.add("dark");
+document.getElementById("theme_btn").onclick = () => document.body.classList.toggle("dark");
+
+setInterval(tick, 750);
+tick();
+</script>
+</body>
+</html>

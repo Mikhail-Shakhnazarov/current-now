@@ -16,12 +16,16 @@ Mode selection (interpret/plan/execute) is a first-class UI control that changes
 
 ## What changed recently (decision deltas)
 
+API feature description under specs.
+
 The delegated TUI implementation has been assimilated into the client-facing repo. The v2 entrypoint is the delegated-style CLI (`atlas_tui.cli:main`) and the architecture keeps the engine boundary as a subprocess speaking a JSONL protocol.
 
 Packaging remains in the current client repo (setuptools) while dependencies were aligned to support the richer cockpit. The older minimal v1 scaffolding modules have been removed to avoid competing implementations.
 
 ## Next
 
-Run the cockpit locally to validate the full loop: launch, workspace discovery, message submit, engine assembly, and log creation. Then replace the default engine implementation with a real engine server that performs Atlas context retrieval and compaction against the live workspace, while keeping the JSONL protocol stable.
+Run the cockpit locally to validate the full loop: launch, workspace discovery, message submit, engine assembly, log creation, latest pointer update, and glass refresh.
+
+Engine note: the bundled dummy engine currently assembles system prompts from packaged Atlas assets and does not yet perform live workspace context retrieval/compaction. The next major debugging surface is the engine selection policy and artifact contracts.
 
 After the engine is stable, add provider call plumbing (OpenAI and Anthropic) and authentication workflows. API keys are expected first; subscription-based logins are explicitly desired but remain an open design problem.

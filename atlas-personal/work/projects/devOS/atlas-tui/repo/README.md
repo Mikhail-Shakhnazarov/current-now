@@ -35,7 +35,43 @@ On each submit, an inspection log is written to:
 - If wrapper exists: `<project_root>/logs/atlas-tui/assembled/`
 - Else: `<repo_root>/.atlas-tui/logs/assembled/`
 
-Chat transcript logging can be toggled in-app with `Ctrl+L`.
+## Keys (v2)
+
+- Submit: `Enter` (Shift+Enter inserts newline)
+- Help overlay: `F1`
+- Cycle focus (repo > chat > project): `F2`
+- Quit: button in the top bar (with confirmation)
+- Force quit: `Ctrl+C` (no confirmation)
+- Quit (with confirmation): `Esc` when no modal is open
+
+Other actions are available via the top-bar buttons (Refresh, Chat Log, Details, Prefs, Restart, Quit).
+
+## Context prefs (v2)
+
+Context prefs are UI-owned hints sent to the engine in `EngineInput.ui_state`:
+
+- profile: minimal/repo/project/debug
+- budget (chars)
+- pinned paths (repo-relative)
+- excluded paths (repo-relative)
+
+Prefs persist to:
+
+- If wrapper exists: `<project_root>/logs/atlas-tui/state/ui_state.json`
+- Else: `<repo_root>/.atlas-tui/state/ui_state.json`
+
+## Glass (optional local web inspector)
+
+Start the TUI plus a read-only local web inspector:
+
+```bash
+atlas-tui --glass
+```
+
+The inspector reads the `latest.json` pointer and renders the last assembled log:
+
+- If wrapper exists: `<project_root>/logs/atlas-tui/state/latest.json`
+- Else: `<repo_root>/.atlas-tui/state/latest.json`
 
 ## License
 
