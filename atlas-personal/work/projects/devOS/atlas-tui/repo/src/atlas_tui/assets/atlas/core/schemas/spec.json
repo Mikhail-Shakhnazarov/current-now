@@ -1,0 +1,97 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Spec",
+  "description": "Executable specification for a task",
+  "type": "object",
+  "required": ["id", "summary", "scope", "requirements", "verification", "status"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^SPEC-[0-9]{3}$",
+      "description": "Unique identifier"
+    },
+    "summary": {
+      "type": "string",
+      "description": "One paragraph: what this accomplishes and why"
+    },
+    "scope": {
+      "type": "object",
+      "required": ["in", "out"],
+      "properties": {
+        "in": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Concrete deliverables"
+        },
+        "out": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Explicit non-goals"
+        }
+      }
+    },
+    "requirements": {
+      "type": "object",
+      "properties": {
+        "must": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Required for completion"
+        },
+        "should": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Expected unless friction"
+        },
+        "may": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Optional enhancements"
+        }
+      }
+    },
+    "target": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Files this spec modifies"
+    },
+    "open": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "description", "closure"],
+        "properties": {
+          "id": {"type": "string"},
+          "description": {"type": "string"},
+          "closure": {"type": "string"}
+        }
+      },
+      "description": "Unresolved items requiring operator decision"
+    },
+    "verification": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["check", "expected"],
+        "properties": {
+          "check": {"type": "string"},
+          "expected": {"type": "string"}
+        }
+      },
+      "description": "How to verify completion"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "active", "complete", "superseded"],
+      "description": "Lifecycle state"
+    },
+    "created": {
+      "type": "string",
+      "format": "date"
+    },
+    "updated": {
+      "type": "string",
+      "format": "date"
+    }
+  }
+}

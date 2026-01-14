@@ -1,0 +1,2 @@
+[console_scripts]
+atlas-tui = atlas_tui.cli:main
