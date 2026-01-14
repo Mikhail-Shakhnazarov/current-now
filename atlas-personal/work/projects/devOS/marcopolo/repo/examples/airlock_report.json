@@ -1,0 +1,12 @@
+{
+  "marco": {
+    "ascii_ok": true,
+    "repaired": false,
+    "non_ascii": []
+  },
+  "polo": {
+    "ascii_ok": true,
+    "repaired": false,
+    "non_ascii": []
+  }
+}

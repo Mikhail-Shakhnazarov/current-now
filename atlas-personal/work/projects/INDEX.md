@@ -18,6 +18,16 @@ Taxonomy:
   - Specs: `devOS/task-timer/specs/`
   - Client repo: `devOS/task-timer/repo/`
 
+- `devOS/marcopolo/` -- imported (active)
+  - Now: `devOS/marcopolo/now.md`
+  - Specs: `devOS/marcopolo/specs/`
+  - Client repo: `devOS/marcopolo/repo/`
+
+- `devOS/marcopolo-atlas/` -- active (in-house tooling)
+  - Now: `devOS/marcopolo-atlas/now.md`
+  - Specs: `devOS/marcopolo-atlas/specs/`
+  - Repo: `devOS/marcopolo-atlas/repo/`
+
 ## writeOS
 
 - `writeOS/marco-polo/` -- active (pilot)

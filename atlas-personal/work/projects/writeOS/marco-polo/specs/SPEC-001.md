@@ -2,7 +2,7 @@
 
 > Status: active
 > Created: 2026-01-13
-> Updated: 2026-01-14 (v2 portability noted)
+> Updated: 2026-01-14 (linked devOS implementation; typed POLO direction noted)
 > Note: v1 assumes ASCII hygiene enforced at intake; interpreter must still flag violations if encountered.
 > Target: `work/projects/writeOS/marco-polo/`
 > Supersedes: N/A
@@ -25,6 +25,10 @@ In this framing, marco is high-bandwidth signal with implicit structure. It is m
 The twist, and the point of leverage, is that we want the system to be composable and self-amplifying. We leverage everything and we build everything to be leveraged. That means every stage of the pipeline should produce artifacts that can serve downstream operations: trace maps that support audit and re-entry, graded verification reports that support safe parking, deterministic pre-processing that supports throughput without spam, and project inbox drops that support immediate routing without interpretation. The artifacts are not just outputs; they are interfaces. A good interface makes future automation easier without requiring it now.
 
 Tooling is also a source of system data. Reliable plumbing should emit durable, structured traces of what it did (what arrived, what was normalized, what artifacts were written, what was explicitly not activated). When those traces are stable and well-formatted, they become a memex-like substrate for later retrieval and synthesis.
+
+This project now has an implementation candidate in `work/projects/devOS/marcopolo/`. The system is moving toward typed POLO (SRC/OPEN/PROP) as the deterministic interface for preprocessing and verification. Human-facing POLO views remain possible, but the pipeline treats MARCO and POLO as typed artifacts and uses trace-first evidence to justify the mapping.
+
+Atlas-specific glue work is tracked in `work/projects/devOS/marcopolo-atlas/`. The goal is to keep `work/projects/devOS/marcopolo/repo/` exportable as a standalone repository while `work/projects/devOS/marcopolo-atlas/repo/` evolves operator CLI wrappers and Atlas path conventions.
 
 Reliability is the non-negotiable constraint. This tooling is plumbing for the Work-OS. It must be very reliable and high quality, because it will sit at the intake boundary where ambiguity and volume are highest, and because the worst failure mode is spammy activation that drowns the operator. Reliability here does not mean binary certainty that two documents "match." Reliability means predictable behavior, explicit uncertainty, conservative defaults, and verifiable outputs. The tool must degrade gracefully on messy input, make its assumptions visible, and never silently promote structure into action.
 

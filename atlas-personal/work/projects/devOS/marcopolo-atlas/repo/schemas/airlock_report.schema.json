@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AirlockReport",
+  "type": "object",
+  "properties": {
+    "ascii_ok": {
+      "type": "boolean"
+    },
+    "repaired": {
+      "type": "boolean"
+    },
+    "non_ascii": {
+      "type": "array"
+    },
+    "repairs": {
+      "type": "array"
+    }
+  }
+}

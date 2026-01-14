@@ -1,0 +1,27 @@
+{
+  "match_min": 0.22,
+  "ambiguity_epsilon": 0.03,
+  "weights": {
+    "coverage": 0.55,
+    "novelty": 0.25,
+    "ambiguity": 0.15,
+    "prop_ratio": 0.05
+  },
+  "labels": [
+    {
+      "label": "low",
+      "min": 0.0,
+      "max": 0.5
+    },
+    {
+      "label": "medium",
+      "min": 0.5,
+      "max": 0.8
+    },
+    {
+      "label": "high",
+      "min": 0.8,
+      "max": 1.0
+    }
+  ]
+}

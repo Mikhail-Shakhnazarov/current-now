@@ -60,3 +60,47 @@ Append-only execution history.
 
 **Verification**: Challenge artifact exists
 **Open**: OPEN-010
+
+## [2026-01-14] PROJECT
+
+**Artifact**: work/projects
+**Spec**: import marcopolo implementation
+
+- **Added**: `work/projects/devOS/marcopolo/` wrapper
+- **Added**: Imported repo into `work/projects/devOS/marcopolo/repo/`
+
+**Verification**: Repo present; wrapper initialized
+**Open**: None
+
+## [2026-01-14] DOCS
+
+**Artifact**: devOS/marcopolo
+**Spec**: standalone readiness
+
+- **Changed**: Standardized authorship in `work/projects/devOS/marcopolo/repo/LICENSE`
+- **Changed**: Formalized standalone `work/projects/devOS/marcopolo/repo/README.md` and added contributor docs
+
+**Verification**: Docs and license updated
+**Open**: None
+
+## [2026-01-14] PROJECT
+
+**Artifact**: work/projects
+**Spec**: create marcopolo-atlas fork
+
+- **Added**: `work/projects/devOS/marcopolo-atlas/` wrapper
+- **Added**: Copied `devOS/marcopolo/repo/` into `devOS/marcopolo-atlas/repo/` for Atlas-specific glue
+
+**Verification**: Project exists; repo copy present
+**Open**: None
+
+## [2026-01-14] SPEC
+
+**Artifact**: writeOS/marco-polo
+**Spec**: SPEC-001 (implementation link)
+
+- **Changed**: Linked `writeOS/marco-polo` spec to `devOS/marcopolo` implementation candidate
+- **Changed**: Noted typed POLO (SRC/OPEN/PROP) as the deterministic interface direction
+
+**Verification**: Link recorded in SPEC-001
+**Open**: OPEN-001, OPEN-002, OPEN-003, OPEN-004, OPEN-005, OPEN-006, OPEN-007, OPEN-008, OPEN-009, OPEN-010

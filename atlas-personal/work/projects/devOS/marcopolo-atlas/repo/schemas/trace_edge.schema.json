@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TraceEdge",
+  "type": "object",
+  "required": [
+    "polo_id",
+    "marco_id",
+    "rel",
+    "score",
+    "features",
+    "rationale"
+  ],
+  "properties": {
+    "polo_id": {
+      "type": "string"
+    },
+    "marco_id": {
+      "type": "string"
+    },
+    "rel": {
+      "type": "string",
+      "enum": [
+        "supports",
+        "mentions",
+        "proposes",
+        "unanswered"
+      ]
+    },
+    "score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "features": {
+      "type": "object"
+    },
+    "rationale": {
+      "type": "string"
+    }
+  }
+}

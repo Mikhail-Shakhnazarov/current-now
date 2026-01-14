@@ -69,15 +69,26 @@ Append-only project history.
 - **Added**: OPEN-009 for airlock CLI contract and canonical airlock location
 
 **Verification**: SPEC-001 updated
-**Open**: OPEN-001, OPEN-002, OPEN-003, OPEN-004, OPEN-005, OPEN-006, OPEN-007, OPEN-008, OPEN-009
+**Open**: OPEN-001, OPEN-002, OPEN-003, OPEN-004, OPEN-005, OPEN-006, OPEN-007, OPEN-008, OPEN-009, OPEN-010
 
 ## [2026-01-14] SPEC UPDATE
 
 **Artifact**: specs
-**Spec**: SPEC-001 (leverage + portability)
+**Spec**: SPEC-001 (tooling fork)
 
-- **Changed**: Added note that tooling emits durable system data (memex-like traces)
-- **Added**: OPEN-010 for the v2 portable challenge artifact contract
+- **Changed**: Linked `devOS/marcopolo-atlas` as the in-house tooling project
+
+**Verification**: SPEC-001 updated
+**Open**: OPEN-001, OPEN-002, OPEN-003, OPEN-004, OPEN-005, OPEN-006, OPEN-007, OPEN-008, OPEN-009, OPEN-010
+
+
+## [2026-01-14] SPEC UPDATE
+
+**Artifact**: specs
+**Spec**: SPEC-001 (implementation link)
+
+- **Changed**: Linked to `work/projects/devOS/marcopolo/` as the implementation candidate
+- **Changed**: Noted typed POLO (SRC/OPEN/PROP) as the deterministic interface direction
 
 **Verification**: SPEC-001 updated
 **Open**: OPEN-001, OPEN-002, OPEN-003, OPEN-004, OPEN-005, OPEN-006, OPEN-007, OPEN-008, OPEN-009, OPEN-010

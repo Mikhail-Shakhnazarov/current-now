@@ -30,6 +30,8 @@ Year: 2026
 
 Prefer slow communication: when operator input is messy or multi-threaded, convert it into durable artifacts (breakdowns, threads, OPEN items) and keep chat output short and scannable. Over time, this becomes tooling surfaces (dashboard: when input arrived, what files were written/updated).
 
+Formalize what makes a "good repo" for subprojects: standalone README, license/authorship, reproducible CLI usage, and a minimal test command.
+
 ## Preflight
 
 - Run: `python atlas-personal/desk/tools/ascii_hygiene.py --check`
