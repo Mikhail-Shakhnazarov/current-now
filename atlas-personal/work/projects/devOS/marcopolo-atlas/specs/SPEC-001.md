@@ -9,7 +9,7 @@
 
 ## Summary
 
-Create an Atlas-specific operator CLI (invoked from repo root) that enforces ASCII admission (overwrite in place) and runs the deterministic marcopolo pipeline to produce canonical typed POLO artifacts and trace evidence for `writeOS/marco-polo`.
+Create an Atlas-specific operator CLI (invoked from repo root) that enforces ASCII admission (overwrite in place) and runs deterministic propagation for canonical typed POLO artifacts for `writeOS/marco-polo`. Trace generation remains optional and late (v1).
 
 The standalone repo at `work/projects/devOS/marcopolo/repo/` remains exportable and unchanged.
 
@@ -22,7 +22,7 @@ The operator CLI must:
 - Run from the Atlas root.
 - Enforce ASCII-only on provided airlock file paths by default and overwrite them in place.
 - Be strict by default; permissive behavior must be explicit.
-- Produce deterministic artifacts (typed POLO, trace edges, graded verification report) with predictable project-local output paths.
+- Produce deterministic propagation artifacts (parsed POLO units, propagation report, rolling state file) with predictable project-local output paths.
 - Produce an admission record (what was overwritten, what artifacts were written, what was not activated).
 - Never activate by default (no todos, no multi-surface mutation).
 

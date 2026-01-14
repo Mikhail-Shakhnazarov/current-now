@@ -2,7 +2,7 @@
 
 > Status: active
 > Created: 2026-01-13
-> Updated: 2026-01-14 (linked devOS implementation; typed POLO direction noted)
+> Updated: 2026-01-14 (v1 propagation + intake path locked)
 > Note: v1 assumes ASCII hygiene enforced at intake; interpreter must still flag violations if encountered.
 > Target: `work/projects/writeOS/marco-polo/`
 > Supersedes: N/A
@@ -78,8 +78,9 @@ Because this is system engineering, we set the standards. The success criteria a
 5. Define a deterministic pre-processing output that can restructure marco-style notes into a first-pass polo-style breakdown using surface features only.
 6. Define a direct-throughput mechanism: operator may tag a target project and have the raw block copied into `work/projects/<project>/drafts/inbox/` as a timestamped markdown file.
 7. Define an airlock admission step (operator CLI tooling) that enforces ASCII-only at intake by default, overwriting airlock files in place.
-8. Specify interpreter behavior when invariants are violated: if the interpreter encounters non-ASCII or malformed formatting in inputs, it must flag this as friction rather than silently proceeding.
-9. Capture key forks in the design space as OPEN items (see Open section).
+8. Define POLO propagation as the primary deterministic step (v1): parse typed POLO and update exactly one rolling project state file.
+9. Specify interpreter behavior when invariants are violated: if the interpreter encounters non-ASCII or malformed formatting in inputs, it must flag this as friction rather than silently proceeding.
+10. Capture key forks in the design space as OPEN items (see Open section).
 
 ### SHOULD
 
@@ -105,6 +106,7 @@ Because this is system engineering, we set the standards. The success criteria a
 - Balance boundary: marco discipline must improve extraction quality while remaining natural and low-friction for the operator.
 - Activation boundary: default behavior must avoid spam; routing proposals are non-binding and do not generate todos without operator promotion.
 - Admission boundary (v1): ASCII-only is a hard substrate invariant; it is enforced at the airlock by operator tooling, but interpreters must still detect and flag violations when they appear.
+- Propagation boundary (v1): POLO is canonical and typed; propagation is deterministic and updates exactly one rolling state file (PROP inclusion is an explicit flag).
 - Portability boundary (v2): produce a third sibling artifact that abstracts the problem into a portable challenge statement with formal acceptance criteria.
 
 ---
@@ -121,7 +123,7 @@ Because this is system engineering, we set the standards. The success criteria a
 | OPEN-006 | What should the graded verification look like (one score with sub-scores vs labeled bands), and what evidence should it cite? | Operator chooses the verification presentation contract. |
 | OPEN-007 | What should deterministic pre-processing be allowed to do (restructure-only vs limited paraphrase), and what is explicitly forbidden? | Operator defines the safe transform boundary. |
 | OPEN-008 | What is the v1 direct-throughput syntax for tagging a target project in a marco note, and what is the filename convention for dropped inbox files? | Operator defines the minimal routing header and naming scheme. |
-| OPEN-009 | What is the v1 airlock CLI contract (command name, strict default, permissive flag behavior), and what directory is treated as the canonical airlock? | Operator defines the airlock tool interface and location. |
+| OPEN-009 | What is the v1 airlock CLI contract (command name, strict default, permissive flag behavior), and what directory is treated as the canonical airlock? | Canonical intake dir is `inbox-airlock/operator-obsidian-render/marcopolo-intake` for v1. |
 | OPEN-010 | What is the v2 portable challenge artifact format and location (file name, sections, acceptance criteria), and how should it stay independent of local system context? | Operator defines the shareable problem statement contract. |
 
 ---

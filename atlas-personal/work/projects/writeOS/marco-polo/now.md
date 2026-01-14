@@ -17,9 +17,9 @@ Work on the semantic relationship between marco and polo:
 ## Next
 
 1. Work from `specs/SPEC-001.md` (design question).
-2. Decide the evaluation rubric (coverage/fidelity/routing/open-items discipline).
-3. Produce a trace map from `marco.md` items to `polo.md` sections.
-4. Identify what can be delegated to deterministic tooling.
+2. Generate a typed POLO in Obsidian and drop it in `inbox-airlock/operator-obsidian-render/marcopolo-intake/`.
+3. Run propagation from root: `python atlas-personal/desk/tools/marcopolo_atlas.py propagate --project writeOS/marco-polo --marco <file> --polo <file> [--include-prop]`.
+4. Read the rolling state at `outputs/state.md`.
 
 ## v2
 

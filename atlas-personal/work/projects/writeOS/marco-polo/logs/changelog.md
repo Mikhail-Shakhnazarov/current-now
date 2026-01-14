@@ -92,3 +92,15 @@ Append-only project history.
 
 **Verification**: SPEC-001 updated
 **Open**: OPEN-001, OPEN-002, OPEN-003, OPEN-004, OPEN-005, OPEN-006, OPEN-007, OPEN-008, OPEN-009, OPEN-010
+
+## [2026-01-14] TOOL
+
+**Artifact**: outputs/logs
+**Spec**: POLO propagation v1
+
+- **Added**: Deterministic propagation via `desk/tools/marcopolo_atlas.py`
+- **Added**: Rolling state file at `outputs/state.md`
+- **Added**: Append-only admission log at `logs/admissions.jsonl`
+
+**Verification**: Propagation creates a run folder under `outputs/runs/`
+**Open**: OPEN-009

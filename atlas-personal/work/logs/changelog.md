@@ -104,3 +104,14 @@ Append-only execution history.
 
 **Verification**: Link recorded in SPEC-001
 **Open**: OPEN-001, OPEN-002, OPEN-003, OPEN-004, OPEN-005, OPEN-006, OPEN-007, OPEN-008, OPEN-009, OPEN-010
+
+## [2026-01-14] TOOL
+
+**Artifact**: desk/tools
+**Spec**: marcopolo propagation v1
+
+- **Added**: `desk/tools/marcopolo_atlas.py` (root-invoked deterministic POLO propagation)
+- **Changed**: Locked v1 intake path and propagation rules in `work/projects/writeOS/marco-polo/specs/SPEC-001.md`
+
+**Verification**: Tool exists; spec updated
+**Open**: OPEN-009
