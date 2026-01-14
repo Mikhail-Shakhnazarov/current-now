@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Friction",
+  "description": "Blocked state requiring operator decision",
+  "type": "object",
+  "required": ["id", "source", "issue", "status", "created"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^FR-[0-9]{3}$"
+    },
+    "source": {
+      "type": "object",
+      "required": ["type", "ref"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["spec", "signal", "execution"]
+        },
+        "ref": {
+          "type": "string",
+          "description": "Reference to source artifact"
+        },
+        "clause": {
+          "type": "string",
+          "description": "Specific clause if applicable"
+        }
+      }
+    },
+    "issue": {
+      "type": "string",
+      "description": "What is unclear or blocking"
+    },
+    "options": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["option", "implications"],
+        "properties": {
+          "option": {"type": "string"},
+          "implications": {"type": "string"}
+        }
+      },
+      "description": "Known resolution paths"
+    },
+    "impact": {
+      "type": "string",
+      "description": "What is blocked by this friction"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["open", "resolved", "deferred"]
+    },
+    "resolution": {
+      "type": "string",
+      "description": "How it was resolved, if resolved"
+    },
+    "created": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "resolved": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

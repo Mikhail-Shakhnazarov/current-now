@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Signal",
+  "description": "Structured representation of operator input after interpretation",
+  "type": "object",
+  "required": ["intent", "type"],
+  "properties": {
+    "intent": {
+      "type": "string",
+      "description": "Clear statement of what operator wants to accomplish"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["task", "decision", "question", "revision"],
+      "description": "Category of operation requested"
+    },
+    "scope": {
+      "type": "object",
+      "properties": {
+        "in": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "What is included in this operation"
+        },
+        "out": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "What is explicitly excluded"
+        }
+      }
+    },
+    "references": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Artifacts referenced by this signal (specs, files, patterns)"
+    },
+    "priority": {
+      "type": "string",
+      "enum": ["high", "medium", "low"],
+      "description": "Relative urgency"
+    },
+    "unclear": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["item", "options"],
+        "properties": {
+          "item": {"type": "string"},
+          "options": {"type": "array", "items": {"type": "string"}}
+        }
+      },
+      "description": "Items requiring operator clarification before proceeding"
+    },
+    "context": {
+      "type": "string",
+      "description": "Relevant background inferred from input"
+    }
+  }
+}

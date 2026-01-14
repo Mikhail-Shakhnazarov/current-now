@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Atlas Glass</title>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 16px; }
+      pre { background: #111; color: #eee; padding: 12px; overflow: auto; }
+      .row { display: flex; gap: 12px; }
+      .col { flex: 1; min-width: 0; }
+      button { padding: 6px 10px; }
+    </style>
+  </head>
+  <body>
+    <h1>Atlas Glass</h1>
+    <p><button id="refresh">Refresh</button></p>
+    <div class="row">
+      <div class="col">
+        <h2>Latest Assembled</h2>
+        <pre id="latest">(loading)</pre>
+      </div>
+      <div class="col">
+        <h2>Latest Snapshot</h2>
+        <pre id="snapshot">(loading)</pre>
+      </div>
+    </div>
+    <h2>Events Tail</h2>
+    <pre id="events">(loading)</pre>
+    <script>
+      async function fetchJson(url) {
+        const r = await fetch(url, { cache: "no-store" });
+        return await r.json();
+      }
+      async function refresh() {
+        const latest = await fetchJson("/api/latest");
+        const snap = await fetchJson("/api/ui/latest_snapshot");
+        const events = await fetchJson("/api/ui/events_tail?n=50");
+        document.getElementById("latest").textContent = JSON.stringify(latest, null, 2);
+        document.getElementById("snapshot").textContent = JSON.stringify(snap, null, 2);
+        document.getElementById("events").textContent = JSON.stringify(events, null, 2);
+      }
+      document.getElementById("refresh").onclick = refresh;
+      refresh();
+    </script>
+  </body>
+</html>
+

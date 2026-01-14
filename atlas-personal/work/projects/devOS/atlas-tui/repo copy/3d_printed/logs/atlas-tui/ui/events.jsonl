@@ -1,0 +1,2 @@
+{"schema_version": 1, "type": "focus_changed", "ts": "2026-01-14T22:35:46+01:00", "session_id": "52af67428c", "payload": {"panel": "repo", "widget_id": "repo_tree"}}
+{"schema_version": 1, "type": "key_handled", "ts": "2026-01-14T22:35:56+01:00", "session_id": "52af67428c", "payload": {"key": "f1", "action": "toggle_help", "screen_stack_depth": 2, "result": "help_toggle"}}

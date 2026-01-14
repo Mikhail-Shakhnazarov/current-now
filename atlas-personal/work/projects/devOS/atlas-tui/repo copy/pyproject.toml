@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "atlas-tui"
+version = "0.1.0"
+description = "Atlas TUI: chat-first repo manager with Atlas context assembly"
+requires-python = ">=3.10"
+readme = "README.md"
+dependencies = [
+  "textual>=0.55.0",
+  "rich>=13.7.0",
+]
+
+[project.scripts]
+atlas-tui = "atlas_tui.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+atlas_tui = ["assets/atlas/**/*", "web/static/**/*"]
