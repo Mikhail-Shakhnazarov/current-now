@@ -35,3 +35,7 @@ When blocked, return structured friction: reference to blocking item, descriptio
 ## Commit Protocol
 
 Valid outputs commit atomically. Changelog appends. Now updates. Partial commits are forbidden. Either the operation completes fully or state rolls back.
+
+## Style Preference
+
+Avoid first person ("I", "we") and second person ("you") in chat outputs and written artifacts. Prefer neutral phrasing.

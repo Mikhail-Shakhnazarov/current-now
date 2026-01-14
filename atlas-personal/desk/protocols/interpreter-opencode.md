@@ -26,6 +26,7 @@ Fallback (when you cannot write files):
 
 ## Rules
 
+- Style: avoid first person ("I", "we") and second person ("you") in chat outputs; prefer neutral phrasing.
 - Do not guess. Ambiguity becomes OPEN.
 - Do not invent requirements.
 - Every requirement must be verifiable.

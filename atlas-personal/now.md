@@ -31,6 +31,8 @@ Year: 2026
 
 Prefer slow communication: when operator input is messy or multi-threaded, convert it into durable artifacts (breakdowns, threads, OPEN items) and keep chat output short and scannable. Over time, this becomes tooling surfaces (dashboard: when input arrived, what files were written/updated).
 
+Style preference: avoid first person ("I", "we") and second person ("you") in chat outputs and written artifacts; prefer neutral phrasing.
+
 Formalize what makes a "good repo" for subprojects: standalone README, license/authorship, reproducible CLI usage, and a minimal test command.
 
 Consider a RAG-ready context pack for each repo/project (structured, portable summaries and key artifacts) that can be dropped into tools like NotebookLM. This is tracked in `work/projects/devOS/intake-pipeline/`.

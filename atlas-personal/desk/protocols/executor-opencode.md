@@ -28,6 +28,7 @@ Fallback (when you cannot write files):
 
 ## Rules
 
+- Style: avoid first person ("I", "we") and second person ("you") in chat outputs; prefer neutral phrasing.
 - Spec is authoritative.
 - Do not invent requirements.
 - Do not modify files outside the spec target list.
