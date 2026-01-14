@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
-"""ASCII and metadata hygiene for atlas-personal.
+"""Repo hygiene for atlas-personal.
 
 Goals:
 - Enforce ASCII-only artifacts across the repository.
 - Normalize common typographic Unicode to ASCII.
 - Repair common mojibake (UTF-8 bytes interpreted as cp1252), then normalize.
 - Normalize all human-facing years to 2026.
+- Flag malformed brace-named paths (e.g., literal "{a,b}") that indicate broken scaffolding.
 
 Usage:
-  python atlas-personal/desk/tools/ascii_hygiene.py --check
-  python atlas-personal/desk/tools/ascii_hygiene.py --fix
+  python atlas-personal/desk/tools/repo_hygiene.py --check
+  python atlas-personal/desk/tools/repo_hygiene.py --fix
 
 Exit codes:
 - 0: success
@@ -104,6 +105,15 @@ def iter_candidate_files(root: pathlib.Path) -> list[pathlib.Path]:
     return files
 
 
+def iter_malformed_paths(root: pathlib.Path) -> list[pathlib.Path]:
+    bad: list[pathlib.Path] = []
+    for p in root.rglob("*"):
+        parts = p.parts
+        if any(("{" in part) or ("}" in part) for part in parts):
+            bad.append(p)
+    return bad
+
+
 def maybe_repair_mojibake(text: str) -> str:
     if not any(marker in text for marker in MOJIBAKE_MARKERS):
         return text
@@ -168,6 +178,9 @@ def write_text_file(path: pathlib.Path, content: str) -> None:
 
 def check_or_fix(*, fix: bool) -> int:
     violations: list[Violation] = []
+
+    for p in iter_malformed_paths(ROOT):
+        violations.append(Violation(p, "malformed path contains '{' or '}'"))
 
     for path in iter_candidate_files(ROOT):
         try:

@@ -10,7 +10,8 @@ Year: 2026
 - Projections: `desk/projections/interpret.md`, `desk/projections/execute.md`
 - OpenCode projections: `desk/projections/interpret-opencode.md`, `desk/projections/execute-opencode.md`
 - Schemas: `desk/core/schemas/`
-- Hygiene: `desk/tools/ascii_hygiene.py`
+- Hygiene: `desk/tools/repo_hygiene.py`
+  - Note: repo hygiene is preparation for the tooling layer (operator CLI triggers) so interpreter models do not spend tool calls on substrate enforcement.
 
 ## Work Surfaces
 
@@ -38,4 +39,4 @@ Consider explicit two-step sequential processing with a handoff point (plan/inte
 
 ## Preflight
 
-- Run: `python atlas-personal/desk/tools/ascii_hygiene.py --check`
+- Run: `python atlas-personal/desk/tools/repo_hygiene.py --check`

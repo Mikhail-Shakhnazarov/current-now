@@ -80,4 +80,4 @@ Closure: decide whether typed POLO is the canonical internal representation, wit
 
 - `repo/` contains a working Python package layout (`pyproject.toml`, `src/`, `tests/`).
 - Wrapper contains `now.md`, `specs/`, `logs/`, `.atlas/version`.
-- Hygiene passes (`python atlas-personal/desk/tools/ascii_hygiene.py --check`).
+- Hygiene passes (`python atlas-personal/desk/tools/repo_hygiene.py --check`).

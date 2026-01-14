@@ -22,7 +22,7 @@ Every model output validates against schema before commit. Invalid output return
 
 ## Hygiene Requirement
 
-All committed artifacts must be ASCII-only. Run `desk/tools/ascii_hygiene.py --check` before committing changes.
+All committed artifacts must be ASCII-only. Run `desk/tools/repo_hygiene.py --check` before committing changes.
 
 ## Role Separation
 

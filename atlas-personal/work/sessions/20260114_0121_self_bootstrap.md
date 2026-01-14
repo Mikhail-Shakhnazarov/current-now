@@ -24,7 +24,7 @@ None logged.
 
 Verification
 
-ASCII hygiene check passes (`python atlas-personal/desk/tools/ascii_hygiene.py --check`).
+Repo hygiene check passes (`python atlas-personal/desk/tools/repo_hygiene.py --check`).
 
 Next
 
