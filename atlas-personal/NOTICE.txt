@@ -3,9 +3,6 @@ NOTICE
 Authorship
 - Mikhail Shakhnazarov
 
-Year convention
-- All dates in this repository are normalized to 2026.
-
 Licensing (path-based)
 
 MIT License applies to:

@@ -1,0 +1,22 @@
+[build-system]
+requires = ["hatchling>=1.24.2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "atlas-tui"
+version = "0.1.0"
+description = "Atlas TUI v2: thin Textual cockpit with engine context inspection via JSONL subprocess."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+authors = [{ name = "Mikhail Shakhnazarov" }]
+dependencies = [
+  "textual>=0.55.0",
+  "rich>=13.7.0",
+]
+
+[project.scripts]
+atlas-tui = "atlas_tui.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["atlas_tui"]

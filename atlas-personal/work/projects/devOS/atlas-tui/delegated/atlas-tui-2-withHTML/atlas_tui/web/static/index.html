@@ -1,0 +1,132 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Atlas Glass</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: ui-sans-serif, system-ui; margin: 16px; line-height: 1.35; }
+    .muted { opacity: 0.75; }
+    .row { display: flex; gap: 12px; flex-wrap: wrap; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 12px; flex: 1 1 320px; }
+    pre { white-space: pre-wrap; word-break: break-word; background: #111; color: #ddd; padding: 12px; border-radius: 10px; overflow: auto; max-height: 50vh; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border-bottom: 1px solid #eee; padding: 6px 8px; text-align: left; font-size: 14px; }
+    th { position: sticky; top: 0; background: #fafafa; }
+    details > summary { cursor: pointer; }
+    code { background: #f3f3f3; padding: 0 4px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Atlas Glass</h1>
+  <div id="meta" class="muted">Waiting for first submission…</div>
+
+  <div class="row">
+    <div class="card">
+      <h2 style="margin-top:0">Context contract</h2>
+      <div id="contract"></div>
+      <details>
+        <summary>System preview</summary>
+        <pre id="sys_preview"></pre>
+      </details>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-top:0">Selection delta</h2>
+      <div id="delta" class="muted">—</div>
+      <h3>Selected artifacts</h3>
+      <div id="artifacts"></div>
+    </div>
+  </div>
+
+  <details>
+    <summary><b>Raw log JSON</b></summary>
+    <pre id="raw"></pre>
+  </details>
+
+<script>
+let lastRequestId = null;
+let lastSelected = new Set();
+
+function esc(s){
+  return (s ?? "").toString()
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;");
+}
+
+function setHtml(id, html){ document.getElementById(id).innerHTML = html; }
+function setText(id, txt){ document.getElementById(id).textContent = txt ?? ""; }
+
+function render(data){
+  const rid = data?.request_id || null;
+  const ws = data?.workspace || {};
+  const meta = data?._latest_meta || {};
+  const logPath = data?._log_path || meta?.last_log_path || "";
+
+  const mode = data?.mode || "";
+  const provider = data?.provider || "";
+  const model = data?.model || "";
+
+  setHtml("meta",
+    `request_id=<b>${esc(rid)}</b> | mode=${esc(mode)} | ${esc(provider)}/${esc(model)}<br>` +
+    `repo=${esc(ws.repo_root)} | project=${esc(ws.project_root || "None")}<br>` +
+    `log=<code>${esc(logPath)}</code>`
+  );
+
+  const ac = data?.assembled_context || {};
+  const sysLen = ac?.system_length_chars ?? "";
+  const sysPrev = ac?.system_preview?.text ?? "";
+  setText("sys_preview", sysPrev);
+
+  const budget = data?.diagnostics?.budgets || {};
+  const unit = budget?.unit ?? "";
+  const target = budget?.target ?? "";
+  const est = budget?.estimated_used_bytes ?? "";
+
+  setHtml("contract",
+    `system_chars=<b>${esc(sysLen)}</b><br>` +
+    `budget=<b>${esc(target)}</b> ${esc(unit)} | est_used_bytes=${esc(est)}<br>` +
+    `ui_state keys: <code>${esc(Object.keys(data?.ui_state || {}).join(", "))}</code>`
+  );
+
+  const sel = (data?.diagnostics?.selected_artifacts || []);
+  const rows = sel.map(it =>
+    `<tr><td><code>${esc(it.path)}</code></td><td>${esc(it.reason)}</td><td>${esc(it.bytes ?? "")}</td><td>${esc(it.kind ?? "")}</td></tr>`
+  ).join("");
+  setHtml("artifacts",
+    `<table><thead><tr><th>path</th><th>reason</th><th>bytes</th><th>kind</th></tr></thead><tbody>${rows}</tbody></table>`
+  );
+
+  // delta (client-side)
+  const cur = new Set(sel.map(it => it.path).filter(Boolean));
+  const added = [...cur].filter(x => !lastSelected.has(x));
+  const removed = [...lastSelected].filter(x => !cur.has(x));
+  lastSelected = cur;
+
+  setHtml("delta",
+    `added: ${added.length ? added.slice(0,8).map(x=>`<code>${esc(x)}</code>`).join(" ") : "—"}<br>` +
+    `removed: ${removed.length ? removed.slice(0,8).map(x=>`<code>${esc(x)}</code>`).join(" ") : "—"}`
+  );
+
+  setText("raw", JSON.stringify(data, null, 2));
+  lastRequestId = rid;
+}
+
+async function tick(){
+  try{
+    const r = await fetch("/api/latest", { cache: "no-store" });
+    const j = await r.json();
+    if(j.status !== "ok") return;
+    const data = j.data;
+    if(data?.request_id && data.request_id !== lastRequestId){
+      render(data);
+    }
+  }catch(e){}
+}
+
+setInterval(tick, 750);
+tick();
+</script>
+</body>
+</html>

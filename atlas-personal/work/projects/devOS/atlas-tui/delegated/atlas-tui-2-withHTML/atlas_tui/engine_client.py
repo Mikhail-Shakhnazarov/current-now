@@ -131,7 +131,7 @@ class EngineClient:
                         fut.set_result(obj.get("payload") or {})
                     else:
                         e = obj.get("error") or {}
-                        fut.set_result(RuntimeError(f"Engine error: {e.get('code','error')} - {e.get('message','')}"))
+                        fut.set_result(RuntimeError(f"Engine error: {e.get('code','error')} — {e.get('message','')}"))
                 elif mtype == "event":
                     # v2: ignore events; could be surfaced in a debug pane later.
                     continue
