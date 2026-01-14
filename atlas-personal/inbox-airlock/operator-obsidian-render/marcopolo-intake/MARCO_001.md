@@ -17,7 +17,7 @@ Project mention annotation (v1):
 
 Use `@devOS/intake-pipeline` or `@writeOS/marco-polo` to mark that an item mentions a project. This is a hint for compilation only, not a routing command.
 
-1. 
+1. priori
 
 2. 
 

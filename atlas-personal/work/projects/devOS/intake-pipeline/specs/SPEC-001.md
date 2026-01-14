@@ -35,6 +35,10 @@ Stage 1: compile
 
 A small model converts MARCO into typed POLO. The output contract is strict and parseable.
 
+Design note: the intake pipeline is primarily a context-forming process. The capture stage holds signal in semi-structured form. The compile stage performs a light semantic transform into a strict typed POLO interface. The deterministic propagation stage precompiles engineered context (state, admissions, runs). Interpreter work later starts from clean context.
+
+Project mention annotation (v1): `@<project>` in MARCO is treated as a weak mention marker (not a routing command). Hash tags are out of scope for v1.
+
 Stage 2: termination
 
 Operator reads typed POLO and approves it. Approval gates propagation.
@@ -128,6 +132,18 @@ Closure: confirm small model for MARCO->POLO, big model for synthesis.
 OPEN-003: Decide where the implementation lives.
 
 Closure: keep `desk/tools/` as prototype; migrate later into a standalone `repo/` under this project.
+
+OPEN-004: Alias policy for project mentions.
+
+Closure: define whether `@intake_pipeline`-style aliases are accepted and how aliases resolve to canonical project paths.
+
+OPEN-005: Pair ledger and retention policy.
+
+Closure: define the canonical ledger artifact for MARCO/POLO pairs (pointer-based, no copies) and when entries are created.
+
+OPEN-006: Resolution tracking for MARCO items.
+
+Closure: define whether resolution state is tracked in rolling POLO-derived state (preferred) vs tracked directly in MARCO.
 
 ---
 

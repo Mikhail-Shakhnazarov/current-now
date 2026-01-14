@@ -35,7 +35,7 @@ Style preference: avoid first person ("I", "we") and second person ("you") in ch
 
 Formalize what makes a "good repo" for subprojects: standalone README, license/authorship, reproducible CLI usage, and a minimal test command.
 
-Consider a RAG-ready context pack for each repo/project (structured, portable summaries and key artifacts) that can be dropped into tools like NotebookLM. This is tracked in `work/projects/devOS/intake-pipeline/`.
+Consider a RAG-ready context pack for each repo/project (structured, portable summaries and key artifacts) that can be dropped into tools like NotebookLM. This is tracked in `work/projects/devOS/intake-pipeline/` (pair ledger is part of this).
 
 Consider explicit two-step sequential processing with a handoff point (plan/interpret -> agentic/execute), designed so work can be parallelized where safe. The key is to make plans and artifacts optimized for parallel execution (independent threads, clear boundaries, deterministic propagation). This is tracked in `work/projects/devOS/intake-pipeline/`.
 

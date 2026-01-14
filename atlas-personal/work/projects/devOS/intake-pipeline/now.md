@@ -21,5 +21,5 @@ MARCO (Obsidian note) -> small model emits typed POLO -> operator reads/approves
 
 1. Read `specs/SPEC-001.md` (project proposal).
 2. Capture the synergy notes (RAG context packs; sequential plan/execute handoff and parallelization).
-3. Define the v1 handoff contract (typed POLO rules + propagation outputs).
-4. Define the devOS implementation work split: what stays in `desk/tools/` vs what becomes a standalone repo under `repo/`.
+3. Keep the v1 vertical slice focused (typed POLO + deterministic propagation).
+4. Leave OPEN items parked until implementation needs them (alias policy; pair ledger; resolution tracking).
