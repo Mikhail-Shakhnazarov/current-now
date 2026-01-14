@@ -29,6 +29,8 @@ Stage 0: capture
 
 Operator writes MARCO as a markdown file in Obsidian throughout the day. MARCO is semi-structured, not garbage.
 
+MARCO template (v1): `inbox-airlock/operator-obsidian-render/marcopolo-intake/MARCO_TEMPLATE.md`
+
 Stage 1: compile
 
 A small model converts MARCO into typed POLO. The output contract is strict and parseable.

@@ -18,3 +18,5 @@ Provide Atlas-specific glue as deterministic tooling:
 ## Next
 
 Define the v1 CLI contract (command name and flags) and wire it to `writeOS/marco-polo/`.
+
+Reference MARCO template: `inbox-airlock/operator-obsidian-render/marcopolo-intake/MARCO_TEMPLATE.md`

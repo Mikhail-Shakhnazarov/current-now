@@ -17,7 +17,7 @@ Work on the semantic relationship between marco and polo:
 ## Next
 
 1. Work from `specs/SPEC-001.md` (design question).
-2. Generate a typed POLO in Obsidian and drop it in `inbox-airlock/operator-obsidian-render/marcopolo-intake/`.
+2. Start from `inbox-airlock/operator-obsidian-render/marcopolo-intake/MARCO_TEMPLATE.md`, then generate a typed POLO in Obsidian and drop it in `inbox-airlock/operator-obsidian-render/marcopolo-intake/`.
 3. Run propagation from root: `python atlas-personal/desk/tools/marcopolo_atlas.py propagate --project writeOS/marco-polo --marco <file> --polo <file> [--include-prop]`.
 4. Read the rolling state at `outputs/state.md`.
 

@@ -43,6 +43,7 @@ Because this is system engineering, we set the standards. The success criteria a
 - `drafts/marco.md` (authoritative operator note)
 - `drafts/polo.md` (derived breakdown that operator approved)
 - Future operator notes (marco-style) captured in Obsidian and exported into this project
+- MARCO template: `inbox-airlock/operator-obsidian-render/marcopolo-intake/MARCO_TEMPLATE.md`
 
 ---
 

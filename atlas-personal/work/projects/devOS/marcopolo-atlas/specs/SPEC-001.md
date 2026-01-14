@@ -11,6 +11,8 @@
 
 Create an Atlas-specific operator CLI (invoked from repo root) that enforces ASCII admission (overwrite in place) and runs deterministic propagation for canonical typed POLO artifacts for `writeOS/marco-polo`. Trace generation remains optional and late (v1).
 
+MARCO input template (Obsidian): `inbox-airlock/operator-obsidian-render/marcopolo-intake/MARCO_TEMPLATE.md`
+
 The standalone repo at `work/projects/devOS/marcopolo/repo/` remains exportable and unchanged.
 
 ---
