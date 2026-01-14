@@ -242,9 +242,18 @@ class RepoHealthPanel(Static):
         )
 
 class HelpOverlay(ModalScreen):
+    BINDINGS = [
+        ("escape", "close", "Close"),
+        ("esc", "close", "Close"),
+        ("f1", "close", "Close"),
+    ]
+
     def __init__(self, app_ref) -> None:
         super().__init__()
         self.app_ref = app_ref
+
+    def action_close(self) -> None:
+        self.dismiss(None)
 
     def compose(self) -> ComposeResult:
         text = """# Atlas TUI - keybindings

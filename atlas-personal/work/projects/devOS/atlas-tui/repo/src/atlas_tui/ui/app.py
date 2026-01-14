@@ -86,6 +86,7 @@ class AtlasTUIApp(App):
         ("f1", "toggle_help", "Help"),
         ("f2", "focus_cycle", "Cycle focus"),
         ("escape", "escape", "Close/Back"),
+        ("esc", "escape", "Close/Back"),
     ]
 
     def __init__(
@@ -396,10 +397,9 @@ class AtlasTUIApp(App):
         w = self.focused
         if w is None:
             return "chat"
-        wid = getattr(w, "id", "") or ""
-        if "repo" in wid:
+        if w in {self.repo_tree, self.repo_health}:
             return "repo"
-        if "project" in wid or "inspection" in wid:
+        if w in {self.project_panel, self.inspection_panel}:
             return "project"
         return "chat"
 
@@ -458,22 +458,38 @@ class AtlasTUIApp(App):
         await self.push_screen(HelpOverlay(self))
 
     async def action_edit_context(self) -> None:
-        prefs = await self.push_screen_wait(ContextPrefsScreen(self.prefs))
-        if not isinstance(prefs, UIContextPrefs):
-            self.status_bar.flash("context prefs canceled")
-            return
-        self.prefs = prefs
+        def _apply(result) -> None:
+            if not isinstance(result, UIContextPrefs):
+                self.status_bar.flash("context prefs canceled")
+                return
+
+            self.prefs = result
+            try:
+                path = save_prefs(self.workspace.repo_root, self.workspace.project_root, self.prefs)
+                self._append_transcript(f"[atlas-tui] context prefs saved: {path}")
+                self.status_bar.flash("context prefs saved")
+            except Exception as e:
+                self._append_transcript(f"[error] failed to save prefs: {e}")
+                self.status_bar.flash(f"save prefs failed: {e}")
+
         try:
-            path = save_prefs(self.workspace.repo_root, self.workspace.project_root, self.prefs)
-            self._append_transcript(f"[atlas-tui] context prefs saved: {path}")
-            self.status_bar.flash("context prefs saved")
-        except Exception as e:
-            self._append_transcript(f"[error] failed to save prefs: {e}")
-            self.status_bar.flash(f"save prefs failed: {e}")
+            # Textual 7+: avoid blocking an action handler waiting for dismissal.
+            await self.push_screen(ContextPrefsScreen(self.prefs), callback=_apply)  # type: ignore[call-arg]
+        except TypeError:
+            # Older Textual: no callback arg.
+            _apply(await self.push_screen_wait(ContextPrefsScreen(self.prefs)))
 
     async def action_escape(self) -> None:
-        # Close modal if present; else return focus to composer.
+        # Close modal if present; else open quit confirmation.
         if len(self.screen_stack) > 1:
+            # Prefer dismissing modals so any waiting callbacks resolve.
+            top = self.screen
+            try:
+                if isinstance(top, ModalScreen):
+                    top.dismiss(None)  # type: ignore[arg-type]
+                    return
+            except Exception:
+                pass
             await self.pop_screen()
         else:
             await self.action_quit()
@@ -506,12 +522,23 @@ class AtlasTUIApp(App):
         if self._quit_confirm_pending:
             return
         self._quit_confirm_pending = True
+
+        def _apply(result) -> None:
+            try:
+                if result:
+                    self.exit()
+            finally:
+                self._quit_confirm_pending = False
+
         try:
-            confirm = await self.push_screen_wait(QuitConfirmScreen())
+            # Textual 7+: avoid blocking an action handler waiting for dismissal.
+            await self.push_screen(QuitConfirmScreen(), callback=_apply)  # type: ignore[call-arg]
+        except TypeError:
+            # Older Textual: no callback arg.
+            confirm = bool(await self.push_screen_wait(QuitConfirmScreen()))
+            self._quit_confirm_pending = False
             if confirm:
                 self.exit()
-        finally:
-            self._quit_confirm_pending = False
 
     async def action_quit(self) -> None:
         await self._request_quit_confirm()
@@ -540,11 +567,6 @@ class AtlasTUIApp(App):
             await self.action_quit()
             return
 
-    async def on_key(self, event) -> None:
-        if event.key in {"escape", "esc"}:
-            await self.action_escape()
-            event.stop()
-
     @on(Select.Changed, "#mode_select")
     async def _mode_changed(self, event: Select.Changed) -> None:
         self.mode = event.value  # type: ignore[assignment]
@@ -557,7 +579,28 @@ class AtlasTUIApp(App):
         self.provider = event.value  # type: ignore[assignment]
         models = DEFAULT_MODELS.get(self.provider, [])
         self.model = models[0] if models else ""
-        self.model_select.set_options([(m, m) for m in models])
+        await self._set_model_options(models)
+
+    async def _set_model_options(self, models: list[str]) -> None:
+        # Textual 7's Select.set_options expects the internal overlay to exist.
+        # During early mounts, Select.Changed can fire before the model Select is
+        # fully composed; retry a few times to avoid crashing.
+        options = [(m, m) for m in models]
+        last_error: Exception | None = None
+        for _ in range(6):
+            try:
+                self.model_select.set_options(options)
+                if self.model:
+                    try:
+                        self.model_select.value = self.model
+                    except Exception:
+                        pass
+                return
+            except Exception as e:
+                last_error = e
+                await asyncio.sleep(0)
+        if last_error:
+            self.status_bar.flash(f"model options update failed: {last_error}")
         self.model_select.value = self.model
         self.status_bar.flash(f"provider: {self.provider}")
         await self._refresh_repo_health()

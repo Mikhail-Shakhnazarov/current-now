@@ -59,12 +59,35 @@ class EngineClient:
     async def stop(self) -> None:
         if not self._proc:
             return
+        proc = self._proc
+        self._proc = None
+
+        if self._reader_task:
+            self._reader_task.cancel()
+            self._reader_task = None
+
+        # Fail any pending requests immediately.
+        for k, fut in list(self._pending.items()):
+            if not fut.done():
+                fut.set_result(RuntimeError("Engine stopped"))
+            self._pending.pop(k, None)
+
         try:
-            self._proc.terminate()
-        except ProcessLookupError:
-            pass
-        await asyncio.sleep(0)
-        self.status = EngineStatus(connected=False, message="stopped")
+            if proc.returncode is None:
+                try:
+                    proc.terminate()
+                except ProcessLookupError:
+                    pass
+                try:
+                    await asyncio.wait_for(proc.wait(), timeout=0.75)
+                except asyncio.TimeoutError:
+                    try:
+                        proc.kill()
+                    except ProcessLookupError:
+                        pass
+                    await proc.wait()
+        finally:
+            self.status = EngineStatus(connected=False, message="stopped")
 
     async def restart(self) -> None:
         await self.stop()

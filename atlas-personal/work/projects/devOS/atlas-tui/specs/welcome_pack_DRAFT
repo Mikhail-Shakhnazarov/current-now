@@ -1,0 +1,156 @@
+# ATLAS_WELCOME_PACK.md
+Status: draft
+Audience: brand new operator
+Purpose: a short guided onboarding script that introduces Atlas without overwhelming context.
+Voice: calm, concrete, optional depth. No jargon unless asked.
+
+---
+
+## What Atlas is (30 seconds)
+
+Atlas is a chat-first tool that works *inside one repository*.  
+It shows three things at once:
+
+- **Chat** (center): ask for help, describe intent, request an artifact.
+- **Repo** (left): what files exist and what changed.
+- **Project/Inspection** (right): what Atlas thinks the workspace is and what context it assembled.
+
+Atlas does **not** change files automatically unless explicitly asked (and later builds may add confirmations).  
+In the current build, Atlas focuses on **making context visible** (debuggable).
+
+---
+
+## Start here: first contact script (system → user)
+
+> Hi. Atlas is running inside a repo.  
+> The goal is to help with work in this repo via chat, while keeping context assembly visible.  
+> Before doing anything: 3 quick questions to calibrate.
+
+### Q1 — Goal for this session (choose one)
+> What is the goal right now?
+> 1) Understand what this tool is  
+> 2) Do a small task in this repo  
+> 3) Inspect/debug what context would be sent to a model
+
+**If user picks 1:** go to “Explain Atlas in one minute.”  
+**If user picks 2:** go to “Do a small task (guided).”  
+**If user picks 3:** go to “Inspect assembled context.”
+
+### Q2 — Familiarity
+> How familiar is the operator with repos and terminals?
+> A) New / unsure  
+> B) Comfortable  
+> C) Very experienced
+
+Use this only to adjust wording. Do not branch features.
+
+### Q3 — Preferred pace
+> Preferred pace?
+> A) Quick: tell what to click/press  
+> B) Guided: short steps with checks  
+> C) Explain: include the “why” briefly
+
+---
+
+## Explain Atlas in one minute (system → user)
+
+> Atlas has one job in this build: make “what context would be sent to a model” visible.  
+> When the operator sends a message, Atlas asks an engine to assemble context, then logs it to disk.  
+> Atlas shows a short preview and the log path so the operator can inspect what happened.
+
+> Nothing is executed. No network calls are made by default.
+
+> Next: send a test message so the workflow becomes concrete.
+
+Prompt:
+> Type a short message like: “Hello Atlas, show what context you assemble for this request.”  
+> Then submit.
+
+After submit:
+> A log file was written. The path is visible in the status bar and in the right panel.  
+> Optional: open the “Glass” page (if enabled) to view the latest log in a browser.
+
+---
+
+## Do a small task (guided)
+
+> Atlas can help with a small repo task via conversation.  
+> For now, the goal is not to “do the task automatically,” but to make the request and context visible.
+
+Step 1 — pick a tiny task
+> Choose one:
+> 1) “Explain what this repository is.”  
+> 2) “Find where the main entry point is.”  
+> 3) “Summarize a single file.”
+
+Step 2 — provide a focus (optional)
+> Optional: select a file in the repo tree first.  
+> Atlas will treat the selected file path as a hint.
+
+Step 3 — send the message
+Example messages:
+- “Explain what this repo is and what it does.”
+- “Where is the entry point? Point to the file(s).”
+- “Summarize the selected file. Keep it short.”
+
+After submit:
+> Atlas will show (a) a short summary in chat, and (b) a log path for inspection.
+
+---
+
+## Inspect assembled context (the “what did Atlas send?” path)
+
+> The inspection loop is:
+> **message → engine output → log file → inspect.**
+
+Step 1 — submit a simple request
+Suggested:
+> “What context are you assembling right now? Keep the reply short.”
+
+Step 2 — look at the right panel
+> It shows:
+> - request id
+> - system length
+> - selected artifacts (if any)
+> - log path
+
+Step 3 — open the log
+> Open the log file path shown in the UI.  
+> The log contains a truncated preview plus the stored payload.
+
+Step 4 — adjust (optional)
+> If the build includes context preferences:
+> - add a pinned path (repo-relative)
+> - add an excluded path (repo-relative)
+> - retry the same request and compare the artifact list
+
+---
+
+## If something feels wrong (tiny troubleshooting)
+
+> If the UI feels stuck:
+> - press the Help key to view shortcuts
+> - return focus to the chat composer
+> - restart the engine child process (if available)
+> - submit a short message again and confirm a new log is written
+
+> If logs are not appearing:
+> - confirm the workspace roots in the top bar
+> - confirm write location:
+>   - wrapper: `project_root/logs/...`
+>   - no wrapper: `repo_root/.atlas-tui/...`
+
+---
+
+## One sentence mental model
+
+> Chat asks for work.  
+> The engine assembles context.  
+> Atlas shows what happened and writes it down.
+
+---
+
+## Exit script (system → user)
+
+> That’s enough for a first run.  
+> Next time: either do a small task, or compare two context assemblies and tune what gets included.
