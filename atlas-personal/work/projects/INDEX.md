@@ -28,6 +28,11 @@ Taxonomy:
   - Specs: `devOS/marcopolo-atlas/specs/`
   - Repo: `devOS/marcopolo-atlas/repo/`
 
+- `devOS/intake-pipeline/` -- active (proposal)
+  - Now: `devOS/intake-pipeline/now.md`
+  - Specs: `devOS/intake-pipeline/specs/`
+  - Repo: `devOS/intake-pipeline/repo/`
+
 ## writeOS
 
 - `writeOS/marco-polo/` -- active (pilot)

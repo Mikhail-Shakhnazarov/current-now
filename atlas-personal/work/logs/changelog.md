@@ -115,3 +115,14 @@ Append-only execution history.
 
 **Verification**: Tool exists; spec updated
 **Open**: OPEN-009
+
+## [2026-01-14] PROJECT
+
+**Artifact**: work/projects
+**Spec**: intake pipeline proposal
+
+- **Added**: `work/projects/devOS/intake-pipeline/` wrapper
+- **Added**: `work/projects/devOS/intake-pipeline/specs/SPEC-001.md` (project proposal)
+
+**Verification**: Project scaffold present
+**Open**: None

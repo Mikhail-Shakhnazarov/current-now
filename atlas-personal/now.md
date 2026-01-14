@@ -32,6 +32,10 @@ Prefer slow communication: when operator input is messy or multi-threaded, conve
 
 Formalize what makes a "good repo" for subprojects: standalone README, license/authorship, reproducible CLI usage, and a minimal test command.
 
+Consider a RAG-ready context pack for each repo/project (structured, portable summaries and key artifacts) that can be dropped into tools like NotebookLM. This is tracked in `work/projects/devOS/intake-pipeline/`.
+
+Consider explicit two-step sequential processing with a handoff point (plan/interpret -> agentic/execute), designed so work can be parallelized where safe. The key is to make plans and artifacts optimized for parallel execution (independent threads, clear boundaries, deterministic propagation). This is tracked in `work/projects/devOS/intake-pipeline/`.
+
 ## Preflight
 
 - Run: `python atlas-personal/desk/tools/ascii_hygiene.py --check`
